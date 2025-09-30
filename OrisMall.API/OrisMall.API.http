@@ -1,0 +1,6 @@
+@OrisMall.API_HostAddress = http://localhost:5063
+
+GET {{OrisMall.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
