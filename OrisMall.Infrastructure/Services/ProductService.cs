@@ -1,0 +1,123 @@
+using OrisMall.Core.DTOs;
+using OrisMall.Core.Entities;
+using OrisMall.Core.Interfaces;
+
+namespace OrisMall.Infrastructure.Services;
+
+public class ProductService : IProductService
+{
+    private readonly IProductRepository _productRepository;
+    private readonly ICategoryRepository _categoryRepository;
+
+    public ProductService(IProductRepository productRepository, ICategoryRepository categoryRepository)
+    {
+        _productRepository = productRepository;
+        _categoryRepository = categoryRepository;
+    }
+
+    public async Task<IEnumerable<ProductDto>> GetAllProductsAsync()
+    {
+        var products = await _productRepository.GetAllAsync();
+        return products.Select(MapToDto);
+    }
+
+    public async Task<ProductDto?> GetProductByIdAsync(int id)
+    {
+        var product = await _productRepository.GetByIdAsync(id);
+        return product != null ? MapToDto(product) : null;
+    }
+
+    public async Task<IEnumerable<ProductDto>> GetProductsByCategoryAsync(int categoryId)
+    {
+        var products = await _productRepository.GetByCategoryIdAsync(categoryId);
+        return products.Select(MapToDto);
+    }
+
+    public async Task<IEnumerable<ProductDto>> SearchProductsAsync(string searchTerm)
+    {
+        var products = await _productRepository.SearchAsync(searchTerm);
+        return products.Select(MapToDto);
+    }
+
+    public async Task<ProductDto> CreateProductAsync(CreateProductDto createProductDto)
+    {
+        // Validate category exists
+        var categoryExists = await _categoryRepository.ExistsAsync(createProductDto.CategoryId);
+        if (!categoryExists)
+        {
+            throw new ArgumentException("Category not found");
+        }
+
+        var product = new Product
+        {
+            Name = createProductDto.Name,
+            Description = createProductDto.Description,
+            Price = createProductDto.Price,
+            StockQuantity = createProductDto.StockQuantity,
+            SKU = createProductDto.SKU,
+            ImageUrl = createProductDto.ImageUrl,
+            CategoryId = createProductDto.CategoryId,
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        var createdProduct = await _productRepository.AddAsync(product);
+        return MapToDto(createdProduct);
+    }
+
+    public async Task<ProductDto?> UpdateProductAsync(int id, UpdateProductDto updateProductDto)
+    {
+        var product = await _productRepository.GetByIdAsync(id);
+        if (product == null)
+            return null;
+
+        // Validate category exists
+        var categoryExists = await _categoryRepository.ExistsAsync(updateProductDto.CategoryId);
+        if (!categoryExists)
+        {
+            throw new ArgumentException("Category not found");
+        }
+
+        product.Name = updateProductDto.Name;
+        product.Description = updateProductDto.Description;
+        product.Price = updateProductDto.Price;
+        product.StockQuantity = updateProductDto.StockQuantity;
+        product.SKU = updateProductDto.SKU;
+        product.ImageUrl = updateProductDto.ImageUrl;
+        product.IsActive = updateProductDto.IsActive;
+        product.CategoryId = updateProductDto.CategoryId;
+        product.UpdatedAt = DateTime.UtcNow;
+
+        var updatedProduct = await _productRepository.UpdateAsync(product);
+        return MapToDto(updatedProduct);
+    }
+
+    public async Task<bool> DeleteProductAsync(int id)
+    {
+        return await _productRepository.DeleteAsync(id);
+    }
+
+    public async Task<bool> ProductExistsAsync(int id)
+    {
+        return await _productRepository.ExistsAsync(id);
+    }
+
+    private static ProductDto MapToDto(Product product)
+    {
+        return new ProductDto
+        {
+            Id = product.Id,
+            Name = product.Name,
+            Description = product.Description,
+            Price = product.Price,
+            StockQuantity = product.StockQuantity,
+            SKU = product.SKU,
+            ImageUrl = product.ImageUrl,
+            IsActive = product.IsActive,
+            CreatedAt = product.CreatedAt,
+            UpdatedAt = product.UpdatedAt,
+            CategoryId = product.CategoryId,
+            CategoryName = product.Category?.Name
+        };
+    }
+}
