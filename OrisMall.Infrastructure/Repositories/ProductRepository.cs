@@ -48,6 +48,79 @@ public class ProductRepository : IProductRepository
             .ToListAsync();
     }
 
+    public async Task<(IEnumerable<Product> Items, int TotalCount)> FilterAsync(
+        string? name,
+        int? categoryId,
+        decimal? minPrice,
+        decimal? maxPrice,
+        bool? inStock,
+        string? sortBy,
+        string? sortDirection,
+        int? page,
+        int? pageSize)
+    {
+        IQueryable<Product> query = _context.Products
+            .Include(p => p.Category)
+            .Where(p => p.IsActive);
+
+        if (!string.IsNullOrWhiteSpace(name))
+        {
+            var term = name.Trim();
+            query = query.Where(p => p.Name.Contains(term) || (p.Description != null && p.Description.Contains(term)));
+        }
+
+        if (categoryId.HasValue)
+        {
+            query = query.Where(p => p.CategoryId == categoryId.Value);
+        }
+
+        if (minPrice.HasValue)
+        {
+            query = query.Where(p => p.Price >= minPrice.Value);
+        }
+
+        if (maxPrice.HasValue)
+        {
+            query = query.Where(p => p.Price <= maxPrice.Value);
+        }
+
+        if (inStock.HasValue)
+        {
+            query = inStock.Value
+                ? query.Where(p => p.StockQuantity > 0)
+                : query.Where(p => p.StockQuantity == 0);
+        }
+
+        // Sorting
+        bool desc = string.Equals(sortDirection, "desc", StringComparison.OrdinalIgnoreCase);
+        switch (sortBy?.ToLowerInvariant())
+        {
+            case "price":
+                query = desc ? query.OrderByDescending(p => p.Price) : query.OrderBy(p => p.Price);
+                break;
+            case "name":
+                query = desc ? query.OrderByDescending(p => p.Name) : query.OrderBy(p => p.Name);
+                break;
+            case "createdat":
+                query = desc ? query.OrderByDescending(p => p.CreatedAt) : query.OrderBy(p => p.CreatedAt);
+                break;
+            default:
+                query = query.OrderBy(p => p.Name);
+                break;
+        }
+
+        var total = await query.CountAsync();
+
+        if (page.HasValue && pageSize.HasValue && page.Value > 0 && pageSize.Value > 0)
+        {
+            int skip = (page.Value - 1) * pageSize.Value;
+            query = query.Skip(skip).Take(pageSize.Value);
+        }
+
+        var items = await query.ToListAsync();
+        return (items, total);
+    }
+
     public async Task<Product> AddAsync(Product product)
     {
         _context.Products.Add(product);

@@ -38,3 +38,16 @@ public class UpdateProductDto
     public bool IsActive { get; set; }
     public int CategoryId { get; set; }
 }
+
+public class ProductFilterDto
+{
+    public string? Name { get; set; }
+    public int? CategoryId { get; set; }
+    public decimal? MinPrice { get; set; }
+    public decimal? MaxPrice { get; set; }
+    public bool? InStock { get; set; }
+    public string? SortBy { get; set; } // name | price | createdAt
+    public string? SortDirection { get; set; } // asc | desc
+    public int? Page { get; set; }
+    public int? PageSize { get; set; }
+}

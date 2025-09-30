@@ -65,6 +65,46 @@ public class ProductsController : ControllerBase
     }
 
     /// <summary>
+    /// Filter products with advanced filtering options
+    /// </summary>
+    [HttpGet("filter")]
+    public async Task<ActionResult<object>> FilterProducts(
+        [FromQuery] string? name, 
+        [FromQuery] int? categoryId,
+        [FromQuery] decimal? minPrice, 
+        [FromQuery] decimal? maxPrice, 
+        [FromQuery] bool? inStock,
+        [FromQuery] string? sortBy, 
+        [FromQuery] string? sortDirection, 
+        [FromQuery] int? page, 
+        [FromQuery] int? pageSize)
+    {
+        var filter = new ProductFilterDto
+        {
+            Name = name,
+            CategoryId = categoryId,
+            MinPrice = minPrice,
+            MaxPrice = maxPrice,
+            InStock = inStock,
+            SortBy = sortBy,
+            SortDirection = sortDirection,
+            Page = page,
+            PageSize = pageSize
+        };
+
+        var (items, total) = await _productService.FilterProductsAsync(filter);
+        
+        return Ok(new
+        {
+            Items = items,
+            TotalCount = total,
+            Page = page ?? 1,
+            PageSize = pageSize ?? total,
+            TotalPages = pageSize.HasValue && pageSize.Value > 0 ? (int)Math.Ceiling((double)total / pageSize.Value) : 1
+        });
+    }
+
+    /// <summary>
     /// Create a new product
     /// </summary>
     [HttpPost]

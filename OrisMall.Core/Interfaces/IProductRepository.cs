@@ -8,6 +8,16 @@ public interface IProductRepository
     Task<Product?> GetByIdAsync(int id);
     Task<IEnumerable<Product>> GetByCategoryIdAsync(int categoryId);
     Task<IEnumerable<Product>> SearchAsync(string searchTerm);
+    Task<(IEnumerable<Product> Items, int TotalCount)> FilterAsync(
+        string? name,
+        int? categoryId,
+        decimal? minPrice,
+        decimal? maxPrice,
+        bool? inStock,
+        string? sortBy,
+        string? sortDirection,
+        int? page,
+        int? pageSize);
     Task<Product> AddAsync(Product product);
     Task<Product> UpdateAsync(Product product);
     Task<bool> DeleteAsync(int id);

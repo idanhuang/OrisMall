@@ -102,6 +102,22 @@ public class ProductService : IProductService
         return await _productRepository.ExistsAsync(id);
     }
 
+    public async Task<(IEnumerable<ProductDto> Items, int TotalCount)> FilterProductsAsync(ProductFilterDto filter)
+    {
+        var (items, total) = await _productRepository.FilterAsync(
+            filter.Name,
+            filter.CategoryId,
+            filter.MinPrice,
+            filter.MaxPrice,
+            filter.InStock,
+            filter.SortBy,
+            filter.SortDirection,
+            filter.Page,
+            filter.PageSize);
+
+        return (items.Select(MapToDto), total);
+    }
+
     private static ProductDto MapToDto(Product product)
     {
         return new ProductDto
