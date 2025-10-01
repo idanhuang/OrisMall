@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using OrisMall.Core.DTOs;
 using OrisMall.Core.Interfaces;
 
@@ -15,9 +16,6 @@ public class ProductsController : ControllerBase
         _productService = productService;
     }
 
-    /// <summary>
-    /// Get all products
-    /// </summary>
     [HttpGet]
     public async Task<ActionResult<IEnumerable<ProductDto>>> GetProducts()
     {
@@ -25,23 +23,16 @@ public class ProductsController : ControllerBase
         return Ok(products);
     }
 
-    /// <summary>
-    /// Get product by ID
-    /// </summary>
     [HttpGet("{id}")]
     public async Task<ActionResult<ProductDto>> GetProduct(int id)
     {
         var product = await _productService.GetProductByIdAsync(id);
         if (product == null)
-        {
             return NotFound();
-        }
+
         return Ok(product);
     }
 
-    /// <summary>
-    /// Get products by category
-    /// </summary>
     [HttpGet("category/{categoryId}")]
     public async Task<ActionResult<IEnumerable<ProductDto>>> GetProductsByCategory(int categoryId)
     {
@@ -49,35 +40,10 @@ public class ProductsController : ControllerBase
         return Ok(products);
     }
 
-    /// <summary>
-    /// Search products
-    /// </summary>
-    [HttpGet("search")]
-    public async Task<ActionResult<IEnumerable<ProductDto>>> SearchProducts([FromQuery] string q)
-    {
-        if (string.IsNullOrWhiteSpace(q))
-        {
-            return BadRequest("Search query cannot be empty");
-        }
-
-        var products = await _productService.SearchProductsAsync(q);
-        return Ok(products);
-    }
-
-    /// <summary>
-    /// Filter products with advanced filtering options
-    /// </summary>
     [HttpGet("filter")]
-    public async Task<ActionResult<object>> FilterProducts(
-        [FromQuery] string? name, 
-        [FromQuery] int? categoryId,
-        [FromQuery] decimal? minPrice, 
-        [FromQuery] decimal? maxPrice, 
-        [FromQuery] bool? inStock,
-        [FromQuery] string? sortBy, 
-        [FromQuery] string? sortDirection, 
-        [FromQuery] int? page, 
-        [FromQuery] int? pageSize)
+    public async Task<ActionResult<object>> FilterProducts([FromQuery] string? name, [FromQuery] int? categoryId,
+        [FromQuery] decimal? minPrice, [FromQuery] decimal? maxPrice, [FromQuery] bool? inStock,
+        [FromQuery] string? sortBy, [FromQuery] string? sortDirection, [FromQuery] int? page, [FromQuery] int? pageSize)
     {
         var filter = new ProductFilterDto
         {
@@ -93,21 +59,21 @@ public class ProductsController : ControllerBase
         };
 
         var (items, total) = await _productService.FilterProductsAsync(filter);
-        
-        return Ok(new
-        {
-            Items = items,
-            TotalCount = total,
-            Page = page ?? 1,
-            PageSize = pageSize ?? total,
-            TotalPages = pageSize.HasValue && pageSize.Value > 0 ? (int)Math.Ceiling((double)total / pageSize.Value) : 1
-        });
+        return Ok(new { total, items });
     }
 
-    /// <summary>
-    /// Create a new product
-    /// </summary>
+    [HttpGet("search")]
+    public async Task<ActionResult<IEnumerable<ProductDto>>> SearchProducts([FromQuery] string q)
+    {
+        if (string.IsNullOrWhiteSpace(q))
+            return BadRequest("Search query is required");
+
+        var products = await _productService.SearchProductsAsync(q);
+        return Ok(products);
+    }
+
     [HttpPost]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<ActionResult<ProductDto>> CreateProduct(CreateProductDto createProductDto)
     {
         try
@@ -121,20 +87,14 @@ public class ProductsController : ControllerBase
         }
     }
 
-    /// <summary>
-    /// Update a product
-    /// </summary>
     [HttpPut("{id}")]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> UpdateProduct(int id, UpdateProductDto updateProductDto)
     {
         try
         {
-            var product = await _productService.UpdateProductAsync(id, updateProductDto);
-            if (product == null)
-            {
-                return NotFound();
-            }
-            return Ok(product);
+            await _productService.UpdateProductAsync(id, updateProductDto);
+            return NoContent();
         }
         catch (ArgumentException ex)
         {
@@ -142,17 +102,18 @@ public class ProductsController : ControllerBase
         }
     }
 
-    /// <summary>
-    /// Delete a product
-    /// </summary>
     [HttpDelete("{id}")]
+    [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> DeleteProduct(int id)
     {
-        var result = await _productService.DeleteProductAsync(id);
-        if (!result)
+        try
         {
-            return NotFound();
+            await _productService.DeleteProductAsync(id);
+            return NoContent();
         }
-        return NoContent();
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
     }
 }

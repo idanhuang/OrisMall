@@ -26,7 +26,7 @@ public class ProductRepository : IProductRepository
     {
         return await _context.Products
             .Include(p => p.Category)
-            .FirstOrDefaultAsync(p => p.Id == id);
+            .FirstOrDefaultAsync(p => p.Id == id && p.IsActive);
     }
 
     public async Task<IEnumerable<Product>> GetByCategoryIdAsync(int categoryId)
@@ -41,8 +41,8 @@ public class ProductRepository : IProductRepository
     {
         return await _context.Products
             .Include(p => p.Category)
-            .Where(p => p.IsActive && 
-                       (p.Name.Contains(searchTerm) || 
+            .Where(p => p.IsActive &&
+                       (p.Name.Contains(searchTerm) ||
                         p.Description!.Contains(searchTerm) ||
                         p.SKU!.Contains(searchTerm)))
             .ToListAsync();
@@ -123,6 +123,7 @@ public class ProductRepository : IProductRepository
 
     public async Task<Product> AddAsync(Product product)
     {
+        product.CreatedAt = DateTime.UtcNow;
         _context.Products.Add(product);
         await _context.SaveChangesAsync();
         return product;
@@ -136,19 +137,20 @@ public class ProductRepository : IProductRepository
         return product;
     }
 
-    public async Task<bool> DeleteAsync(int id)
+    public async Task DeleteAsync(int id)
     {
         var product = await _context.Products.FindAsync(id);
-        if (product == null)
-            return false;
-
-        _context.Products.Remove(product);
-        await _context.SaveChangesAsync();
-        return true;
+        if (product != null)
+        {
+            product.IsActive = false;
+            product.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+        }
     }
 
     public async Task<bool> ExistsAsync(int id)
     {
-        return await _context.Products.AnyAsync(p => p.Id == id);
+        return await _context.Products.AnyAsync(p => p.Id == id && p.IsActive);
     }
 }
+

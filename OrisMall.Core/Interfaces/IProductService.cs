@@ -10,7 +10,6 @@ public interface IProductService
     Task<IEnumerable<ProductDto>> SearchProductsAsync(string searchTerm);
     Task<(IEnumerable<ProductDto> Items, int TotalCount)> FilterProductsAsync(ProductFilterDto filter);
     Task<ProductDto> CreateProductAsync(CreateProductDto createProductDto);
-    Task<ProductDto?> UpdateProductAsync(int id, UpdateProductDto updateProductDto);
-    Task<bool> DeleteProductAsync(int id);
-    Task<bool> ProductExistsAsync(int id);
+    Task<ProductDto> UpdateProductAsync(int id, UpdateProductDto updateProductDto);
+    Task DeleteProductAsync(int id);
 }

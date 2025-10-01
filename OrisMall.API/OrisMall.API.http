@@ -1,6 +1,76 @@
-@OrisMall.API_HostAddress = http://localhost:5063
+@OrisMall.API_HostAddress = https://localhost:7295
 
-GET {{OrisMall.API_HostAddress}}/weatherforecast/
+### Get all categories
+GET {{OrisMall.API_HostAddress}}/api/categories
 Accept: application/json
 
-###
+### Get category by ID
+GET {{OrisMall.API_HostAddress}}/api/categories/1
+Accept: application/json
+
+### Get all products
+GET {{OrisMall.API_HostAddress}}/api/products
+Accept: application/json
+
+### Get product by ID
+GET {{OrisMall.API_HostAddress}}/api/products/1
+Accept: application/json
+
+### Search products
+GET {{OrisMall.API_HostAddress}}/api/products/search?q=smartphone
+Accept: application/json
+
+### Get products by category
+GET {{OrisMall.API_HostAddress}}/api/products/category/1
+Accept: application/json
+
+### Register a new user
+POST {{OrisMall.API_HostAddress}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "firstName": "John",
+  "lastName": "Doe",
+  "password": "password123",
+  "phoneNumber": "123-456-7890"
+}
+
+### Login user
+POST {{OrisMall.API_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "password123"
+}
+
+### Check if email exists
+GET {{OrisMall.API_HostAddress}}/api/auth/email-exists?email=test@example.com
+Accept: application/json
+
+### Create a new category (requires authentication)
+POST {{OrisMall.API_HostAddress}}/api/categories
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+{
+  "name": "Sports",
+  "description": "Sports and fitness equipment",
+  "imageUrl": "https://example.com/sports.jpg"
+}
+
+### Create a new product (requires authentication)
+POST {{OrisMall.API_HostAddress}}/api/products
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+{
+  "name": "Running Shoes",
+  "description": "Comfortable running shoes for all terrains",
+  "price": 89.99,
+  "stockQuantity": 50,
+  "sku": "SHOE001",
+  "imageUrl": "https://example.com/running-shoes.jpg",
+  "categoryId": 1
+}

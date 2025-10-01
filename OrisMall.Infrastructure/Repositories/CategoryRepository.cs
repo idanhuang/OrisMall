@@ -24,11 +24,12 @@ public class CategoryRepository : ICategoryRepository
     public async Task<Category?> GetByIdAsync(int id)
     {
         return await _context.Categories
-            .FirstOrDefaultAsync(c => c.Id == id);
+            .FirstOrDefaultAsync(c => c.Id == id && c.IsActive);
     }
 
     public async Task<Category> AddAsync(Category category)
     {
+        category.CreatedAt = DateTime.UtcNow;
         _context.Categories.Add(category);
         await _context.SaveChangesAsync();
         return category;
@@ -42,19 +43,23 @@ public class CategoryRepository : ICategoryRepository
         return category;
     }
 
-    public async Task<bool> DeleteAsync(int id)
+    public async Task DeleteAsync(int id)
     {
         var category = await _context.Categories.FindAsync(id);
-        if (category == null)
-            return false;
-
-        _context.Categories.Remove(category);
-        await _context.SaveChangesAsync();
-        return true;
+        if (category != null)
+        {
+            category.IsActive = false;
+            category.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+        }
     }
 
     public async Task<bool> ExistsAsync(int id)
     {
-        return await _context.Categories.AnyAsync(c => c.Id == id);
+        return await _context.Categories.AnyAsync(c => c.Id == id && c.IsActive);
     }
 }
+
+
+
+

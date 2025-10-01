@@ -41,12 +41,9 @@ public class ProductService : IProductService
 
     public async Task<ProductDto> CreateProductAsync(CreateProductDto createProductDto)
     {
-        // Validate category exists
-        var categoryExists = await _categoryRepository.ExistsAsync(createProductDto.CategoryId);
-        if (!categoryExists)
-        {
+        var category = await _categoryRepository.GetByIdAsync(createProductDto.CategoryId);
+        if (category == null)
             throw new ArgumentException("Category not found");
-        }
 
         var product = new Product
         {
@@ -57,26 +54,22 @@ public class ProductService : IProductService
             SKU = createProductDto.SKU,
             ImageUrl = createProductDto.ImageUrl,
             CategoryId = createProductDto.CategoryId,
-            IsActive = true,
-            CreatedAt = DateTime.UtcNow
+            IsActive = true
         };
 
         var createdProduct = await _productRepository.AddAsync(product);
         return MapToDto(createdProduct);
     }
 
-    public async Task<ProductDto?> UpdateProductAsync(int id, UpdateProductDto updateProductDto)
+    public async Task<ProductDto> UpdateProductAsync(int id, UpdateProductDto updateProductDto)
     {
         var product = await _productRepository.GetByIdAsync(id);
         if (product == null)
-            return null;
+            throw new ArgumentException("Product not found");
 
-        // Validate category exists
-        var categoryExists = await _categoryRepository.ExistsAsync(updateProductDto.CategoryId);
-        if (!categoryExists)
-        {
+        var category = await _categoryRepository.GetByIdAsync(updateProductDto.CategoryId);
+        if (category == null)
             throw new ArgumentException("Category not found");
-        }
 
         product.Name = updateProductDto.Name;
         product.Description = updateProductDto.Description;
@@ -84,22 +77,35 @@ public class ProductService : IProductService
         product.StockQuantity = updateProductDto.StockQuantity;
         product.SKU = updateProductDto.SKU;
         product.ImageUrl = updateProductDto.ImageUrl;
-        product.IsActive = updateProductDto.IsActive;
         product.CategoryId = updateProductDto.CategoryId;
-        product.UpdatedAt = DateTime.UtcNow;
+        product.IsActive = updateProductDto.IsActive;
 
         var updatedProduct = await _productRepository.UpdateAsync(product);
         return MapToDto(updatedProduct);
     }
 
-    public async Task<bool> DeleteProductAsync(int id)
+    public async Task DeleteProductAsync(int id)
     {
-        return await _productRepository.DeleteAsync(id);
+        await _productRepository.DeleteAsync(id);
     }
 
-    public async Task<bool> ProductExistsAsync(int id)
+
+    private static ProductDto MapToDto(Product product)
     {
-        return await _productRepository.ExistsAsync(id);
+        return new ProductDto
+        {
+            Id = product.Id,
+            Name = product.Name,
+            Description = product.Description,
+            Price = product.Price,
+            StockQuantity = product.StockQuantity,
+            SKU = product.SKU,
+            ImageUrl = product.ImageUrl,
+            IsActive = product.IsActive,
+            CategoryId = product.CategoryId,
+            CategoryName = product.Category?.Name ?? string.Empty,
+            CreatedAt = product.CreatedAt
+        };
     }
 
     public async Task<(IEnumerable<ProductDto> Items, int TotalCount)> FilterProductsAsync(ProductFilterDto filter)
@@ -117,23 +123,5 @@ public class ProductService : IProductService
 
         return (items.Select(MapToDto), total);
     }
-
-    private static ProductDto MapToDto(Product product)
-    {
-        return new ProductDto
-        {
-            Id = product.Id,
-            Name = product.Name,
-            Description = product.Description,
-            Price = product.Price,
-            StockQuantity = product.StockQuantity,
-            SKU = product.SKU,
-            ImageUrl = product.ImageUrl,
-            IsActive = product.IsActive,
-            CreatedAt = product.CreatedAt,
-            UpdatedAt = product.UpdatedAt,
-            CategoryId = product.CategoryId,
-            CategoryName = product.Category?.Name
-        };
-    }
 }
+

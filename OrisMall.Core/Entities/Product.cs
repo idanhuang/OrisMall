@@ -7,24 +7,23 @@ public class Product
     public int Id { get; set; }
     
     [Required]
-    [MaxLength(200)]
+    [StringLength(200)]
     public string Name { get; set; } = string.Empty;
     
-    [MaxLength(1000)]
+    [StringLength(1000)]
     public string? Description { get; set; }
     
     [Required]
     [Range(0.01, double.MaxValue, ErrorMessage = "Price must be greater than 0")]
     public decimal Price { get; set; }
     
-    [Required]
-    [Range(0, int.MaxValue, ErrorMessage = "Stock quantity cannot be negative")]
+    [Range(0, int.MaxValue)]
     public int StockQuantity { get; set; }
     
-    [MaxLength(100)]
+    [StringLength(100)]
     public string? SKU { get; set; }
     
-    [MaxLength(500)]
+    [StringLength(500)]
     public string? ImageUrl { get; set; }
     
     public bool IsActive { get; set; } = true;
@@ -33,9 +32,10 @@ public class Product
     
     public DateTime? UpdatedAt { get; set; }
     
-    // Foreign Key
     public int CategoryId { get; set; }
+
+    public Category Category { get; set; } = null!;
     
-    // Navigation Property
-    public Category? Category { get; set; }
+    public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
+    public ICollection<CartItem> CartItems { get; set; } = new List<CartItem>();
 }

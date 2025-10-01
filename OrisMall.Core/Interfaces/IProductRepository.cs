@@ -20,6 +20,6 @@ public interface IProductRepository
         int? pageSize);
     Task<Product> AddAsync(Product product);
     Task<Product> UpdateAsync(Product product);
-    Task<bool> DeleteAsync(int id);
+    Task DeleteAsync(int id);
     Task<bool> ExistsAsync(int id);
 }

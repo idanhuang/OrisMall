@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace OrisMall.Core.DTOs;
 
 public class CategoryDto
@@ -8,21 +10,36 @@ public class CategoryDto
     public string? ImageUrl { get; set; }
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; }
-    public DateTime? UpdatedAt { get; set; }
-    public int ProductCount { get; set; }
 }
 
 public class CreateCategoryDto
 {
+    [Required]
+    [StringLength(100)]
     public string Name { get; set; } = string.Empty;
+    
+    [StringLength(500)]
     public string? Description { get; set; }
+    
+    [StringLength(200)]
     public string? ImageUrl { get; set; }
 }
 
 public class UpdateCategoryDto
 {
+    [Required]
+    [StringLength(100)]
     public string Name { get; set; } = string.Empty;
+    
+    [StringLength(500)]
     public string? Description { get; set; }
+    
+    [StringLength(200)]
     public string? ImageUrl { get; set; }
+    
     public bool IsActive { get; set; }
 }
+
+
+
+
