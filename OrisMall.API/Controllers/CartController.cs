@@ -30,7 +30,7 @@ public class CartController : ControllerBase
         {
             var sessionId = GetOrCreateSessionId();
             var cart = await _cartService.AddToCartAsync(sessionId, addToCartDto);
-            return Ok(cart);
+            return CreatedAtAction(nameof(GetCart), null, cart);
         }
         catch (ArgumentException ex)
         {
@@ -39,13 +39,13 @@ public class CartController : ControllerBase
     }
 
     [HttpPut("update")]
-    public async Task<ActionResult<CartDto>> UpdateCartItem(UpdateCartItemDto updateCartItemDto)
+    public async Task<IActionResult> UpdateCartItem(UpdateCartItemDto updateCartItemDto)
     {
         try
         {
             var sessionId = GetOrCreateSessionId();
-            var cart = await _cartService.UpdateCartItemAsync(sessionId, updateCartItemDto);
-            return Ok(cart);
+            await _cartService.UpdateCartItemAsync(sessionId, updateCartItemDto);
+            return NoContent();
         }
         catch (ArgumentException ex)
         {
@@ -54,13 +54,13 @@ public class CartController : ControllerBase
     }
 
     [HttpDelete("remove/{productId}")]
-    public async Task<ActionResult<CartDto>> RemoveFromCart(int productId)
+    public async Task<IActionResult> RemoveFromCart(int productId)
     {
         try
         {
             var sessionId = GetOrCreateSessionId();
-            var cart = await _cartService.RemoveFromCartAsync(sessionId, productId);
-            return Ok(cart);
+            await _cartService.RemoveFromCartAsync(sessionId, productId);
+            return NoContent();
         }
         catch (ArgumentException ex)
         {
@@ -69,11 +69,11 @@ public class CartController : ControllerBase
     }
 
     [HttpDelete("clear")]
-    public async Task<ActionResult<CartDto>> ClearCart()
+    public async Task<IActionResult> ClearCart()
     {
         var sessionId = GetOrCreateSessionId();
-        var cart = await _cartService.ClearCartAsync(sessionId);
-        return Ok(cart);
+        await _cartService.ClearCartAsync(sessionId);
+        return NoContent();
     }
 
     [HttpGet("count")]
