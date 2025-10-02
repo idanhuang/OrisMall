@@ -1,12 +1,14 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.Caching.Memory;
 using System.Text;
 using System.Security.Claims;
 using OrisMall.Infrastructure.Data;
 using OrisMall.Infrastructure.Repositories;
 using OrisMall.Infrastructure.Services;
 using OrisMall.Core.Interfaces;
+using OrisMall.Core.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,13 +25,24 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
+// Configure cache options from appsettings.json
+builder.Services.Configure<CacheOptions>(builder.Configuration.GetSection(CacheOptions.SectionName));
+
+// Memory Cache configuration
+builder.Services.AddMemoryCache(options =>
+{
+    var cacheConfig = builder.Configuration.GetSection(CacheOptions.SectionName).Get<CacheOptions>() ?? new CacheOptions();
+    options.SizeLimit = cacheConfig.SizeLimit;
+    options.CompactionPercentage = cacheConfig.CompactionPercentage;
+});
+
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo 
     { 
-        Title = "ECommerce Platform API", 
+        Title = "OrisMall API", 
         Version = "v1" 
     });
     
@@ -70,9 +83,24 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<ICartRepository, CartRepository>();
 
-// Services
-builder.Services.AddScoped<IProductService, ProductService>();
-builder.Services.AddScoped<ICategoryService, CategoryService>();
+// Services (with caching decorators)
+builder.Services.AddScoped<ProductService>(); // Register the concrete service
+builder.Services.AddScoped<CategoryService>(); // Register the concrete service
+
+// Register cached services that depend on concrete implementations
+builder.Services.AddScoped<ICategoryService>(provider =>
+{
+    var categoryService = provider.GetRequiredService<CategoryService>();
+    var cache = provider.GetRequiredService<IMemoryCache>();
+    return new CachedCategoryService(categoryService, cache);
+});
+builder.Services.AddScoped<IProductService>(provider =>
+{
+    var productService = provider.GetRequiredService<ProductService>();
+    var cache = provider.GetRequiredService<IMemoryCache>();
+    return new CachedProductService(productService, cache);
+});
+
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ICartService, CartService>();
 
