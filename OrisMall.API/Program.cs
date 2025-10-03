@@ -9,8 +9,18 @@ using OrisMall.Infrastructure.Repositories;
 using OrisMall.Infrastructure.Services;
 using OrisMall.Core.Interfaces;
 using OrisMall.Core.Configuration;
+using OrisMall.API.Middleware;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure Serilog
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .CreateLogger();
+
+// Use Serilog for logging
+builder.Host.UseSerilog();
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -104,6 +114,9 @@ builder.Services.AddScoped<IProductService>(provider =>
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ICartService, CartService>();
 
+// Logging Service
+builder.Services.AddScoped<ILoggingService, LoggingService>();
+
 // JWT Authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -148,6 +161,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// Add custom logging middleware early in the pipeline
+app.UseMiddleware<RequestResponseLoggingMiddleware>();
+
 app.UseCors("AllowAll");
 app.UseSession();
 app.UseAuthentication();
@@ -162,4 +179,16 @@ using (var scope = app.Services.CreateScope())
     context.Database.EnsureCreated(); // Create new database with updated schema
 }
 
-app.Run();
+try
+{
+    Log.Information("Starting OrisMall API");
+    app.Run();
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "Application terminated unexpectedly");
+}
+finally
+{
+    Log.CloseAndFlush();
+}
