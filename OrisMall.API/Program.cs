@@ -50,12 +50,12 @@ builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo 
-    { 
-        Title = "OrisMall API", 
-        Version = "v1" 
+    c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    {
+        Title = "OrisMall API",
+        Version = "v1"
     });
-    
+
     // Add JWT Authentication to Swagger
     c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
     {
@@ -65,7 +65,7 @@ builder.Services.AddSwaggerGen(c =>
         Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
         Scheme = "Bearer"
     });
-    
+
     c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
     {
         {
@@ -112,6 +112,17 @@ builder.Services.AddScoped<IProductService>(provider =>
 
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ICartService, CartService>();
+
+// Payment Service Registration - Environment-based selection
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddScoped<IPaymentService, OrisMall.MockPaymentGateway.MockPaymentGateway>();
+}
+else
+{
+    // TODO: For production, integrate with 3rd party payment gateway
+    // builder.Services.AddScoped<IPaymentService, PayPalPaymentService>();
+}
 
 // Logging Service
 builder.Services.AddScoped<ILoggingService, LoggingService>();

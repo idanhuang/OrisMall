@@ -25,6 +25,7 @@
     <ProjectReference Include="..\OrisMall.Core\OrisMall.Core.csproj" />
     <ProjectReference Include="..\OrisMall.Infrastructure\OrisMall.Infrastructure.csproj" />
     <ProjectReference Include="..\OrisMall.API\OrisMall.API.csproj" />
+    <ProjectReference Include="..\OrisMall.MockPaymentGateway\OrisMall.MockPaymentGateway.csproj" />
   </ItemGroup>
 
 </Project>
