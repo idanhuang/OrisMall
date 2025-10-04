@@ -154,7 +154,7 @@ public static class MockDataHelper
                 Email = "dan.huang@example.com",
                 FirstName = "Dan",
                 LastName = "Huang",
-                PasswordHash = "75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=", // Base64 hash of "password123"
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("password123", BCrypt.Net.BCrypt.GenerateSalt(12)), // BCrypt hash of "password123"
                 PhoneNumber = "+1234567890",
                 IsActive = true,
                 IsEmailVerified = true,
@@ -168,7 +168,7 @@ public static class MockDataHelper
                 Email = "admin@example.com",
                 FirstName = "Admin",
                 LastName = "User",
-                PasswordHash = "hashedadminpassword",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin123", BCrypt.Net.BCrypt.GenerateSalt(12)), // BCrypt hash of "admin123"
                 PhoneNumber = "+1234567891",
                 IsActive = true,
                 IsEmailVerified = true,
