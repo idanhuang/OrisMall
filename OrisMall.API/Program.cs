@@ -14,20 +14,19 @@ using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configure Serilog
+// ===== LOGGING CONFIGURATION =====
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
     .CreateLogger();
+builder.Host.UseSerilog(); 
 
-// Use Serilog for logging
-builder.Host.UseSerilog();
-
-// Add services to the container.
+// ===== CORE SERVICES =====
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddHttpContextAccessor();
 
-// Session configuration
-builder.Services.AddDistributedMemoryCache();
+// ===== SESSION =====
+builder.Services.AddDistributedMemoryCache(); // Register IDistributedCache in DI container
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromMinutes(30);
@@ -35,10 +34,8 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
-// Configure cache options from appsettings.json
-builder.Services.Configure<CacheOptions>(builder.Configuration.GetSection(CacheOptions.SectionName));
-
-// Memory Cache configuration
+// ===== CACHING =====
+// Load Memory cache configuration & Register IMemoryCache in DI container
 builder.Services.AddMemoryCache(options =>
 {
     var cacheConfig = builder.Configuration.GetSection(CacheOptions.SectionName).Get<CacheOptions>() ?? new CacheOptions();
@@ -46,8 +43,7 @@ builder.Services.AddMemoryCache(options =>
     options.CompactionPercentage = cacheConfig.CompactionPercentage;
 });
 
-builder.Services.AddHttpContextAccessor();
-
+// ===== SWAGGER DOCUMENTATION =====
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
@@ -82,21 +78,18 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-// Database
-builder.Services.AddDbContext<OrisMallDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-// Repositories
+// ===== REPOSITORIES =====
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ICartRepository, CartRepository>();
 
-// Services (with caching decorators)
-builder.Services.AddScoped<ProductService>(); // Register the concrete service
-builder.Services.AddScoped<CategoryService>(); // Register the concrete service
+// ===== BUSINESS SERVICES =====
+// Concrete services (for dependency injection)
+builder.Services.AddScoped<ProductService>();
+builder.Services.AddScoped<CategoryService>();
 
-// Register cached services that depend on concrete implementations
+// Cached services (decorators)
 builder.Services.AddScoped<ICategoryService>(provider =>
 {
     var categoryService = provider.GetRequiredService<CategoryService>();
@@ -110,10 +103,11 @@ builder.Services.AddScoped<IProductService>(provider =>
     return new CachedProductService(productService, cache);
 });
 
+// Other business services
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ICartService, CartService>();
 
-// Payment Service Registration - Environment-based selection
+// ===== PAYMENT SERVICES =====
 if (builder.Environment.IsDevelopment())
 {
     builder.Services.AddScoped<IPaymentService, OrisMall.MockPaymentGateway.MockPaymentGateway>();
@@ -122,12 +116,14 @@ else
 {
     // TODO: For production, integrate with 3rd party payment gateway
     // builder.Services.AddScoped<IPaymentService, PayPalPaymentService>();
+    // Use MockPaymentGateway to avoid application crash
+    builder.Services.AddScoped<IPaymentService, OrisMall.MockPaymentGateway.MockPaymentGateway>();
 }
 
-// Logging Service
+// ===== INFRASTRUCTURE SERVICES =====
 builder.Services.AddScoped<ILoggingService, LoggingService>();
 
-// JWT Authentication
+// ===== SECURITY & AUTHENTICATION =====
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -150,45 +146,76 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
 });
 
-// CORS
+// CORS configuration
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
     {
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader();
+        if (builder.Environment.IsDevelopment())
+        {
+            // Development: Allow all origins for testing
+            policy.AllowAnyOrigin()
+                  .AllowAnyMethod()
+                  .AllowAnyHeader();
+        }
+        else
+        {
+            // Production: Only allow specific origins
+            policy.WithOrigins("https://orismall.com")
+                  .WithMethods("GET", "POST", "PUT", "DELETE")
+                  .WithHeaders("Content-Type", "Authorization");
+        }
     });
 });
 
+// ===== DATABASE =====
+builder.Services.AddDbContext<OrisMallDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// ===== HTTP REQUEST PIPELINE =====
+// Development tools
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
+// Security & routing
 app.UseHttpsRedirection();
+app.UseCors("AllowAll");
 
-// Add custom logging middleware early in the pipeline
+// Custom middleware
 app.UseMiddleware<RequestResponseLoggingMiddleware>();
 
-app.UseCors("AllowAll");
+// Authentication & authorization
 app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Endpoints
 app.MapControllers();
 
-// Ensure database is created with latest schema
+// ===== DATABASE INITIALIZATION =====
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<OrisMallDbContext>();
-    context.Database.EnsureDeleted(); // Delete existing database
-    context.Database.EnsureCreated(); // Create new database with updated schema
+    
+    if (app.Environment.IsDevelopment())
+    {
+        // Development: Delete and recreate (safe for test data)
+        context.Database.EnsureDeleted();
+        context.Database.EnsureCreated();
+    }
+    else
+    {
+        // Production: Use migrations (preserves customer data)
+        context.Database.Migrate();
+    }
 }
 
+// ===== APPLICATION STARTUP =====
 try
 {
     Log.Information("Starting OrisMall API");
