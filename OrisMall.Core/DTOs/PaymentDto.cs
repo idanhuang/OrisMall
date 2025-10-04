@@ -12,6 +12,7 @@ public class ProcessPaymentDto
     public decimal Amount { get; set; }
     
     [Required]
+    [RegularExpression(@"^[A-Z]{3}$", ErrorMessage = "Currency must be 3 uppercase letters. Valid example: USD")]
     public string Currency { get; set; } = "USD";
 }
 

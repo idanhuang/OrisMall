@@ -10,10 +10,12 @@ namespace OrisMall.API.Controllers;
 public class ProductsController : ControllerBase
 {
     private readonly IProductService _productService;
+    private readonly ILogger<ProductsController> _logger;
 
-    public ProductsController(IProductService productService)
+    public ProductsController(IProductService productService, ILogger<ProductsController> logger)
     {
         _productService = productService;
+        _logger = logger;
     }
 
     [HttpGet]
@@ -76,13 +78,24 @@ public class ProductsController : ControllerBase
     [Authorize(Policy = "AdminOnly")]
     public async Task<ActionResult<ProductDto>> CreateProduct(CreateProductDto createProductDto)
     {
+        if (!ModelState.IsValid)
+        {
+            _logger.LogWarning("Invalid product creation request model state");
+            return BadRequest(ModelState);
+        }
+
         try
         {
+            _logger.LogInformation("Creating product with name {ProductName}", createProductDto.Name);
+            
             var product = await _productService.CreateProductAsync(createProductDto);
+            
+            _logger.LogInformation("Product created successfully with ID {ProductId}", product.Id);
             return CreatedAtAction(nameof(GetProduct), new { id = product.Id }, product);
         }
         catch (ArgumentException ex)
         {
+            _logger.LogWarning("Product creation failed: {Message}", ex.Message);
             return BadRequest(ex.Message);
         }
     }
@@ -91,13 +104,24 @@ public class ProductsController : ControllerBase
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> UpdateProduct(int id, UpdateProductDto updateProductDto)
     {
+        if (!ModelState.IsValid)
+        {
+            _logger.LogWarning("Invalid product update request model state for product ID {ProductId}", id);
+            return BadRequest(ModelState);
+        }
+
         try
         {
+            _logger.LogInformation("Updating product with ID {ProductId}", id);
+            
             await _productService.UpdateProductAsync(id, updateProductDto);
+            
+            _logger.LogInformation("Product updated successfully with ID {ProductId}", id);
             return NoContent();
         }
         catch (ArgumentException ex)
         {
+            _logger.LogWarning("Product update failed for ID {ProductId}: {Message}", id, ex.Message);
             return BadRequest(ex.Message);
         }
     }

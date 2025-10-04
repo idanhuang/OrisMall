@@ -9,10 +9,12 @@ namespace OrisMall.API.Controllers;
 public class CartController : ControllerBase
 {
     private readonly ICartService _cartService;
+    private readonly ILogger<CartController> _logger;
 
-    public CartController(ICartService cartService)
+    public CartController(ICartService cartService, ILogger<CartController> logger)
     {
         _cartService = cartService;
+        _logger = logger;
     }
 
     [HttpGet]
@@ -26,14 +28,25 @@ public class CartController : ControllerBase
     [HttpPost("add")]
     public async Task<ActionResult<CartDto>> AddToCart(AddToCartDto addToCartDto)
     {
+        if (!ModelState.IsValid)
+        {
+            _logger.LogWarning("Invalid add to cart request model state");
+            return BadRequest(ModelState);
+        }
+
         try
         {
             var sessionId = GetOrCreateSessionId();
+            _logger.LogInformation("Adding product {ProductId} to cart for session {SessionId}", addToCartDto.ProductId, sessionId);
+            
             var cart = await _cartService.AddToCartAsync(sessionId, addToCartDto);
+            
+            _logger.LogInformation("Product {ProductId} added to cart successfully for session {SessionId}", addToCartDto.ProductId, sessionId);
             return CreatedAtAction(nameof(GetCart), null, cart);
         }
         catch (ArgumentException ex)
         {
+            _logger.LogWarning("Add to cart failed: {Message}", ex.Message);
             return BadRequest(ex.Message);
         }
     }
@@ -41,14 +54,25 @@ public class CartController : ControllerBase
     [HttpPut("update")]
     public async Task<IActionResult> UpdateCartItem(UpdateCartItemDto updateCartItemDto)
     {
+        if (!ModelState.IsValid)
+        {
+            _logger.LogWarning("Invalid update cart item request model state");
+            return BadRequest(ModelState);
+        }
+
         try
         {
             var sessionId = GetOrCreateSessionId();
+            _logger.LogInformation("Updating cart item {ProductId} for session {SessionId}", updateCartItemDto.ProductId, sessionId);
+            
             await _cartService.UpdateCartItemAsync(sessionId, updateCartItemDto);
+            
+            _logger.LogInformation("Cart item {ProductId} updated successfully for session {SessionId}", updateCartItemDto.ProductId, sessionId);
             return NoContent();
         }
         catch (ArgumentException ex)
         {
+            _logger.LogWarning("Update cart item failed: {Message}", ex.Message);
             return BadRequest(ex.Message);
         }
     }
