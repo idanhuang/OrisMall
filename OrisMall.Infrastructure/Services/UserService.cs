@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using OrisMall.Core.DTOs;
 using OrisMall.Core.Entities;
 using OrisMall.Core.Interfaces;
+using OrisMall.Core.Exceptions;
 
 namespace OrisMall.Infrastructure.Services;
 
@@ -30,7 +31,7 @@ public class UserService : IUserService
     public async Task<UserDto> RegisterAsync(RegisterDto registerDto)
     {
         if (await _userRepository.EmailExistsAsync(registerDto.Email))
-            throw new ArgumentException("Email already exists");
+            throw new ValidationException("Email already exists");
 
         var user = new User
         {
@@ -51,7 +52,7 @@ public class UserService : IUserService
     public async Task<UserDto> CreateAdminAsync(RegisterDto registerDto)
     {
         if (await _userRepository.EmailExistsAsync(registerDto.Email))
-            throw new ArgumentException("Email already exists");
+            throw new ValidationException("Email already exists");
 
         var user = new User
         {
@@ -74,10 +75,10 @@ public class UserService : IUserService
         // Check if any admin already exists
         var existingAdmins = await _userRepository.GetAllAsync();
         if (existingAdmins.Any(u => u.Role == "Admin"))
-            throw new ArgumentException("Admin users already exist. Use the create-admin endpoint instead.");
+            throw new ValidationException("Admin users already exist. Use the create-admin endpoint instead.");
 
         if (await _userRepository.EmailExistsAsync(registerDto.Email))
-            throw new ArgumentException("Email already exists");
+            throw new ValidationException("Email already exists");
 
         var user = new User
         {
@@ -99,7 +100,7 @@ public class UserService : IUserService
     {
         var user = await _userRepository.GetByEmailAsync(loginDto.Email);
         if (user == null || !VerifyPassword(loginDto.Password, user.PasswordHash))
-            throw new UnauthorizedAccessException("Invalid email or password");
+            throw new UnauthorizedException("Invalid email or password");
 
         user.LastLoginAt = DateTime.UtcNow;
         await _userRepository.UpdateAsync(user);

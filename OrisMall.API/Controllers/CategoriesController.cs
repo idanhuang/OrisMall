@@ -20,17 +20,27 @@ public class CategoriesController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<CategoryDto>>> GetCategories()
     {
+        _logger.LogInformation("Retrieving all categories");
+        
         var categories = await _categoryService.GetAllCategoriesAsync();
+        
+        _logger.LogInformation("Retrieved {CategoryCount} categories successfully", categories.Count());
         return Ok(categories);
     }
 
     [HttpGet("{id}")]
     public async Task<ActionResult<CategoryDto>> GetCategory(int id)
     {
+        _logger.LogInformation("Retrieving category with ID {CategoryId}", id);
+        
         var category = await _categoryService.GetCategoryByIdAsync(id);
         if (category == null)
+        {
+            _logger.LogWarning("Category {CategoryId} not found", id);
             return NotFound();
+        }
 
+        _logger.LogInformation("Category {CategoryId} retrieved successfully", id);
         return Ok(category);
     }
 
@@ -43,20 +53,12 @@ public class CategoriesController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        try
-        {
-            _logger.LogInformation("Creating category with name {CategoryName}", createCategoryDto.Name);
-            
-            var category = await _categoryService.CreateCategoryAsync(createCategoryDto);
-            
-            _logger.LogInformation("Category created successfully with ID {CategoryId}", category.Id);
-            return CreatedAtAction(nameof(GetCategory), new { id = category.Id }, category);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Unexpected error creating category");
-            return StatusCode(500, "Internal server error");
-        }
+        _logger.LogInformation("Creating category with name {CategoryName}", createCategoryDto.Name);
+        
+        var category = await _categoryService.CreateCategoryAsync(createCategoryDto);
+        
+        _logger.LogInformation("Category created successfully with ID {CategoryId}", category.Id);
+        return CreatedAtAction(nameof(GetCategory), new { id = category.Id }, category);
     }
 
     [HttpPut("{id}")]
@@ -68,33 +70,18 @@ public class CategoriesController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        try
-        {
-            _logger.LogInformation("Updating category with ID {CategoryId}", id);
-            
-            await _categoryService.UpdateCategoryAsync(id, updateCategoryDto);
-            
-            _logger.LogInformation("Category updated successfully with ID {CategoryId}", id);
-            return NoContent();
-        }
-        catch (ArgumentException ex)
-        {
-            _logger.LogWarning("Category update failed for ID {CategoryId}: {Message}", id, ex.Message);
-            return BadRequest(ex.Message);
-        }
+        _logger.LogInformation("Updating category with ID {CategoryId}", id);
+        
+        await _categoryService.UpdateCategoryAsync(id, updateCategoryDto);
+        
+        _logger.LogInformation("Category updated successfully with ID {CategoryId}", id);
+        return NoContent();
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteCategory(int id)
     {
-        try
-        {
-            await _categoryService.DeleteCategoryAsync(id);
-            return NoContent();
-        }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(ex.Message);
-        }
+        await _categoryService.DeleteCategoryAsync(id);
+        return NoContent();
     }
 }

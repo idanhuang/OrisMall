@@ -188,6 +188,7 @@ app.UseCors("AllowAll");
 
 // Custom middleware
 app.UseMiddleware<RequestResponseLoggingMiddleware>();
+app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
 
 // Authentication & authorization
 app.UseSession();
@@ -196,6 +197,13 @@ app.UseAuthorization();
 
 // Endpoints
 app.MapControllers();
+
+// Development-only test endpoints
+if (app.Environment.IsDevelopment())
+{
+    // Test controllers are automatically mapped with [ApiController] attribute
+    // No additional mapping needed
+}
 
 // ===== DATABASE INITIALIZATION =====
 using (var scope = app.Services.CreateScope())

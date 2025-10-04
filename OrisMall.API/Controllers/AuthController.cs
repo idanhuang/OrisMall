@@ -27,20 +27,12 @@ public class AuthController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        try
-        {
-            _logger.LogInformation("Registering new user with email {Email}", registerDto.Email);
-            
-            var user = await _userService.RegisterAsync(registerDto);
-            
-            _logger.LogInformation("User registered successfully with ID {UserId}", user.Id);
-            return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
-        }
-        catch (ArgumentException ex)
-        {
-            _logger.LogWarning("User registration failed: {Message}", ex.Message);
-            return BadRequest(ex.Message);
-        }
+        _logger.LogInformation("Registering new user with email {Email}", registerDto.Email);
+        
+        var user = await _userService.RegisterAsync(registerDto);
+        
+        _logger.LogInformation("User registered successfully with ID {UserId}", user.Id);
+        return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
     }
 
     [HttpPost("login")]
@@ -52,36 +44,38 @@ public class AuthController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        try
-        {
-            _logger.LogInformation("User login attempt for email {Email}", loginDto.Email);
-            
-            var authResponse = await _userService.LoginAsync(loginDto);
-            
-            _logger.LogInformation("User login successful for email {Email}", loginDto.Email);
-            return Ok(authResponse);
-        }
-        catch (UnauthorizedAccessException ex)
-        {
-            _logger.LogWarning("Login failed for email {Email}: {Message}", loginDto.Email, ex.Message);
-            return Unauthorized(ex.Message);
-        }
+        _logger.LogInformation("User login attempt for email {Email}", loginDto.Email);
+        
+        var authResponse = await _userService.LoginAsync(loginDto);
+        
+        _logger.LogInformation("User login successful for email {Email}", loginDto.Email);
+        return Ok(authResponse);
     }
 
     [HttpGet("user/{id}")]
     public async Task<ActionResult<UserDto>> GetUser(int id)
     {
+        _logger.LogInformation("Retrieving user with ID {UserId}", id);
+        
         var user = await _userService.GetUserByIdAsync(id);
         if (user == null)
+        {
+            _logger.LogWarning("User {UserId} not found", id);
             return NotFound();
+        }
 
+        _logger.LogInformation("User {UserId} retrieved successfully", id);
         return Ok(user);
     }
 
     [HttpGet("email-exists")]
     public async Task<ActionResult<bool>> EmailExists([FromQuery] string email)
     {
+        _logger.LogInformation("Checking if email exists: {Email}", email);
+        
         var exists = await _userService.EmailExistsAsync(email);
+        
+        _logger.LogInformation("Email existence check completed for {Email}: {Exists}", email, exists);
         return Ok(exists);
     }
 
@@ -95,20 +89,12 @@ public class AuthController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        try
-        {
-            _logger.LogInformation("Creating admin user with email {Email}", registerDto.Email);
-            
-            var user = await _userService.CreateAdminAsync(registerDto);
-            
-            _logger.LogInformation("Admin user created successfully with ID {UserId}", user.Id);
-            return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
-        }
-        catch (ArgumentException ex)
-        {
-            _logger.LogWarning("Admin creation failed: {Message}", ex.Message);
-            return BadRequest(ex.Message);
-        }
+        _logger.LogInformation("Creating admin user with email {Email}", registerDto.Email);
+        
+        var user = await _userService.CreateAdminAsync(registerDto);
+        
+        _logger.LogInformation("Admin user created successfully with ID {UserId}", user.Id);
+        return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
     }
 
     [HttpPost("setup-first-admin")]
@@ -120,19 +106,11 @@ public class AuthController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        try
-        {
-            _logger.LogInformation("Setting up first admin user with email {Email}", registerDto.Email);
-            
-            var user = await _userService.SetupFirstAdminAsync(registerDto);
-            
-            _logger.LogInformation("First admin user setup successfully with ID {UserId}", user.Id);
-            return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
-        }
-        catch (ArgumentException ex)
-        {
-            _logger.LogWarning("First admin setup failed: {Message}", ex.Message);
-            return BadRequest(ex.Message);
-        }
+        _logger.LogInformation("Setting up first admin user with email {Email}", registerDto.Email);
+        
+        var user = await _userService.SetupFirstAdminAsync(registerDto);
+        
+        _logger.LogInformation("First admin user setup successfully with ID {UserId}", user.Id);
+        return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
     }
 }

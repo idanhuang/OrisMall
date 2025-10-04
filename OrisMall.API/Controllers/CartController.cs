@@ -21,7 +21,11 @@ public class CartController : ControllerBase
     public async Task<ActionResult<CartDto>> GetCart()
     {
         var sessionId = GetOrCreateSessionId();
+        _logger.LogInformation("Retrieving cart for session {SessionId}", sessionId);
+        
         var cart = await _cartService.GetCartAsync(sessionId);
+        
+        _logger.LogInformation("Cart retrieved successfully for session {SessionId}", sessionId);
         return Ok(cart);
     }
 
@@ -34,21 +38,13 @@ public class CartController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        try
-        {
-            var sessionId = GetOrCreateSessionId();
-            _logger.LogInformation("Adding product {ProductId} to cart for session {SessionId}", addToCartDto.ProductId, sessionId);
-            
-            var cart = await _cartService.AddToCartAsync(sessionId, addToCartDto);
-            
-            _logger.LogInformation("Product {ProductId} added to cart successfully for session {SessionId}", addToCartDto.ProductId, sessionId);
-            return CreatedAtAction(nameof(GetCart), null, cart);
-        }
-        catch (ArgumentException ex)
-        {
-            _logger.LogWarning("Add to cart failed: {Message}", ex.Message);
-            return BadRequest(ex.Message);
-        }
+        var sessionId = GetOrCreateSessionId();
+        _logger.LogInformation("Adding product {ProductId} to cart for session {SessionId}", addToCartDto.ProductId, sessionId);
+        
+        var cart = await _cartService.AddToCartAsync(sessionId, addToCartDto);
+        
+        _logger.LogInformation("Product {ProductId} added to cart successfully for session {SessionId}", addToCartDto.ProductId, sessionId);
+        return CreatedAtAction(nameof(GetCart), null, cart);
     }
 
     [HttpPut("update")]
@@ -60,43 +56,32 @@ public class CartController : ControllerBase
             return BadRequest(ModelState);
         }
 
-        try
-        {
-            var sessionId = GetOrCreateSessionId();
-            _logger.LogInformation("Updating cart item {ProductId} for session {SessionId}", updateCartItemDto.ProductId, sessionId);
-            
-            await _cartService.UpdateCartItemAsync(sessionId, updateCartItemDto);
-            
-            _logger.LogInformation("Cart item {ProductId} updated successfully for session {SessionId}", updateCartItemDto.ProductId, sessionId);
-            return NoContent();
-        }
-        catch (ArgumentException ex)
-        {
-            _logger.LogWarning("Update cart item failed: {Message}", ex.Message);
-            return BadRequest(ex.Message);
-        }
+        var sessionId = GetOrCreateSessionId();
+        _logger.LogInformation("Updating cart item {ProductId} for session {SessionId}", updateCartItemDto.ProductId, sessionId);
+        
+        await _cartService.UpdateCartItemAsync(sessionId, updateCartItemDto);
+        
+        _logger.LogInformation("Cart item {ProductId} updated successfully for session {SessionId}", updateCartItemDto.ProductId, sessionId);
+        return NoContent();
     }
 
     [HttpDelete("remove/{productId}")]
     public async Task<IActionResult> RemoveFromCart(int productId)
     {
-        try
-        {
-            var sessionId = GetOrCreateSessionId();
-            await _cartService.RemoveFromCartAsync(sessionId, productId);
-            return NoContent();
-        }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(ex.Message);
-        }
+        var sessionId = GetOrCreateSessionId();
+        await _cartService.RemoveFromCartAsync(sessionId, productId);
+        return NoContent();
     }
 
     [HttpDelete("clear")]
     public async Task<IActionResult> ClearCart()
     {
         var sessionId = GetOrCreateSessionId();
+        _logger.LogInformation("Clearing cart for session {SessionId}", sessionId);
+        
         await _cartService.ClearCartAsync(sessionId);
+        
+        _logger.LogInformation("Cart cleared successfully for session {SessionId}", sessionId);
         return NoContent();
     }
 
@@ -104,7 +89,11 @@ public class CartController : ControllerBase
     public async Task<ActionResult<int>> GetCartItemCount()
     {
         var sessionId = GetOrCreateSessionId();
+        _logger.LogInformation("Getting cart item count for session {SessionId}", sessionId);
+        
         var count = await _cartService.GetCartItemCountAsync(sessionId);
+        
+        _logger.LogInformation("Cart item count retrieved for session {SessionId}: {Count}", sessionId, count);
         return Ok(count);
     }
 
@@ -112,7 +101,11 @@ public class CartController : ControllerBase
     public async Task<ActionResult<bool>> CartExists()
     {
         var sessionId = GetOrCreateSessionId();
+        _logger.LogInformation("Checking if cart exists for session {SessionId}", sessionId);
+        
         var exists = await _cartService.CartExistsAsync(sessionId);
+        
+        _logger.LogInformation("Cart existence check completed for session {SessionId}: {Exists}", sessionId, exists);
         return Ok(exists);
     }
 
