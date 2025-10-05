@@ -17,6 +17,10 @@ public class CartController : ControllerBase
         _logger = logger;
     }
 
+    /// <summary>
+    /// Get current cart contents
+    /// </summary>
+    /// <returns>Cart information with items</returns>
     [HttpGet]
     public async Task<ActionResult<CartDto>> GetCart()
     {
@@ -29,6 +33,10 @@ public class CartController : ControllerBase
         return Ok(cart);
     }
 
+    /// <summary>
+    /// Add product to cart
+    /// </summary>
+    /// <returns>Updated cart information</returns>
     [HttpPost("add")]
     public async Task<ActionResult<CartDto>> AddToCart(AddToCartDto addToCartDto)
     {
@@ -38,9 +46,13 @@ public class CartController : ControllerBase
         var cart = await _cartService.AddToCartAsync(sessionId, addToCartDto);
         
         _logger.LogInformation("Product {ProductId} added to cart successfully for session {SessionId}", addToCartDto.ProductId, sessionId);
-        return CreatedAtAction(nameof(GetCart), null, cart);
+        return CreatedAtAction(nameof(GetCart), new { }, cart);
     }
 
+    /// <summary>
+    /// Update cart item quantity
+    /// </summary>
+    /// <returns>No content on success</returns>
     [HttpPut("update")]
     public async Task<IActionResult> UpdateCartItem(UpdateCartItemDto updateCartItemDto)
     {
@@ -53,14 +65,26 @@ public class CartController : ControllerBase
         return NoContent();
     }
 
+    /// <summary>
+    /// Remove product from cart
+    /// </summary>
+    /// <returns>No content on success</returns>
     [HttpDelete("remove/{productId}")]
     public async Task<IActionResult> RemoveFromCart(int productId)
     {
         var sessionId = GetOrCreateSessionId();
+        _logger.LogInformation("Removing product {ProductId} from cart for session {SessionId}", productId, sessionId);
+        
         await _cartService.RemoveFromCartAsync(sessionId, productId);
+        
+        _logger.LogInformation("Product {ProductId} removed from cart successfully for session {SessionId}", productId, sessionId);
         return NoContent();
     }
 
+    /// <summary>
+    /// Clear all items from cart
+    /// </summary>
+    /// <returns>No content on success</returns>
     [HttpDelete("clear")]
     public async Task<IActionResult> ClearCart()
     {
@@ -73,6 +97,10 @@ public class CartController : ControllerBase
         return NoContent();
     }
 
+    /// <summary>
+    /// Get total number of items in cart
+    /// </summary>
+    /// <returns>Cart item count</returns>
     [HttpGet("count")]
     public async Task<ActionResult<int>> GetCartItemCount()
     {
@@ -83,18 +111,6 @@ public class CartController : ControllerBase
         
         _logger.LogInformation("Cart item count retrieved for session {SessionId}: {Count}", sessionId, count);
         return Ok(count);
-    }
-
-    [HttpGet("exists")]
-    public async Task<ActionResult<bool>> CartExists()
-    {
-        var sessionId = GetOrCreateSessionId();
-        _logger.LogInformation("Checking if cart exists for session {SessionId}", sessionId);
-        
-        var exists = await _cartService.CartExistsAsync(sessionId);
-        
-        _logger.LogInformation("Cart existence check completed for session {SessionId}: {Exists}", sessionId, exists);
-        return Ok(exists);
     }
 
     private string GetOrCreateSessionId()

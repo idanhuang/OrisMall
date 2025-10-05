@@ -1,5 +1,6 @@
 using OrisMall.Core.DTOs;
 using OrisMall.Core.Interfaces;
+using OrisMall.Core.Exceptions;
 using Microsoft.AspNetCore.Http;
 using System.Text.Json;
 
@@ -117,12 +118,12 @@ public class CartService : ICartService
         var cart = await GetCartAsync(sessionId);
         var item = cart.Items.FirstOrDefault(x => x.ProductId == productId);
         
-        if (item != null)
-        {
-            cart.Items.Remove(item);
-            await UpdateCartTotalsAsync(cart);
-            await SaveCartAsync(sessionId, cart);
-        }
+        if (item == null)
+            throw new NotFoundException("Product", productId);
+        
+        cart.Items.Remove(item);
+        await UpdateCartTotalsAsync(cart);
+        await SaveCartAsync(sessionId, cart);
         
         return cart;
     }
@@ -132,12 +133,6 @@ public class CartService : ICartService
         var cart = CreateEmptyCart(sessionId);
         await SaveCartAsync(sessionId, cart);
         return cart;
-    }
-
-    public async Task<bool> CartExistsAsync(string sessionId)
-    {
-        var cart = await GetCartAsync(sessionId);
-        return cart.Items.Any();
     }
 
     public async Task<int> GetCartItemCountAsync(string sessionId)
