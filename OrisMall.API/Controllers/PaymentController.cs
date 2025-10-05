@@ -17,6 +17,10 @@ public class PaymentController : ControllerBase
         _logger = logger;
     }
 
+    /// <summary>
+    /// Process payment for an order
+    /// </summary>
+    /// <returns>Payment processing result</returns>
     [HttpPost("process")]
     public async Task<ActionResult<PaymentResponseDto>> ProcessPayment([FromBody] ProcessPaymentDto paymentRequest)
     {
@@ -26,6 +30,10 @@ public class PaymentController : ControllerBase
         return Ok(response);
     }
 
+    /// <summary>
+    /// Get payment status by payment ID
+    /// </summary>
+    /// <returns>Payment status information</returns>
     [HttpGet("status/{paymentId}")]
     public async Task<ActionResult<PaymentStatusDto>> GetPaymentStatus(string paymentId)
     {
@@ -35,6 +43,10 @@ public class PaymentController : ControllerBase
         return Ok(status);
     }
 
+    /// <summary>
+    /// Process refund for a payment
+    /// </summary>
+    /// <returns>Refund processing result</returns>
     [HttpPost("refund")]
     public async Task<ActionResult<RefundResponseDto>> RefundPayment([FromBody] RefundPaymentDto refundRequest)
     {
