@@ -18,7 +18,6 @@ public class ProductRepository : IProductRepository
     {
         return await _context.Products
             .Include(p => p.Category)
-            .Where(p => p.IsActive)
             .ToListAsync();
     }
 
@@ -26,14 +25,14 @@ public class ProductRepository : IProductRepository
     {
         return await _context.Products
             .Include(p => p.Category)
-            .FirstOrDefaultAsync(p => p.Id == id && p.IsActive);
+            .FirstOrDefaultAsync(p => p.Id == id);
     }
 
     public async Task<IEnumerable<Product>> GetByCategoryIdAsync(int categoryId)
     {
         return await _context.Products
             .Include(p => p.Category)
-            .Where(p => p.CategoryId == categoryId && p.IsActive)
+            .Where(p => p.CategoryId == categoryId)
             .ToListAsync();
     }
 
@@ -41,10 +40,9 @@ public class ProductRepository : IProductRepository
     {
         return await _context.Products
             .Include(p => p.Category)
-            .Where(p => p.IsActive &&
-                       (p.Name.Contains(searchTerm) ||
-                        p.Description!.Contains(searchTerm) ||
-                        p.SKU!.Contains(searchTerm)))
+            .Where(p => p.Name.Contains(searchTerm) ||
+                       p.Description!.Contains(searchTerm) ||
+                       p.SKU!.Contains(searchTerm))
             .ToListAsync();
     }
 
@@ -60,8 +58,7 @@ public class ProductRepository : IProductRepository
         int? pageSize)
     {
         IQueryable<Product> query = _context.Products
-            .Include(p => p.Category)
-            .Where(p => p.IsActive);
+            .Include(p => p.Category);
 
         if (!string.IsNullOrWhiteSpace(name))
         {
@@ -142,15 +139,19 @@ public class ProductRepository : IProductRepository
         var product = await _context.Products.FindAsync(id);
         if (product != null)
         {
-            product.IsActive = false;
-            product.UpdatedAt = DateTime.UtcNow;
+            _context.Products.Remove(product);
             await _context.SaveChangesAsync();
         }
     }
 
     public async Task<bool> ExistsAsync(int id)
     {
-        return await _context.Products.AnyAsync(p => p.Id == id && p.IsActive);
+        return await _context.Products.AnyAsync(p => p.Id == id);
+    }
+
+    public async Task<bool> HasProductsInCategoryAsync(int categoryId)
+    {
+        return await _context.Products.AnyAsync(p => p.CategoryId == categoryId);
     }
 }
 

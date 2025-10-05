@@ -20,12 +20,6 @@ public class PaymentController : ControllerBase
     [HttpPost("process")]
     public async Task<ActionResult<PaymentResponseDto>> ProcessPayment([FromBody] ProcessPaymentDto paymentRequest)
     {
-        if (!ModelState.IsValid)
-        {
-            _logger.LogWarning("Invalid payment request model state");
-            return BadRequest(ModelState);
-        }
-
         _logger.LogInformation("Processing payment request for order {OrderId}", paymentRequest.OrderId);
 
         var response = await _paymentService.ProcessPaymentAsync(paymentRequest);
@@ -44,12 +38,6 @@ public class PaymentController : ControllerBase
     [HttpPost("refund")]
     public async Task<ActionResult<RefundResponseDto>> RefundPayment([FromBody] RefundPaymentDto refundRequest)
     {
-        if (!ModelState.IsValid)
-        {
-            _logger.LogWarning("Invalid refund request model state");
-            return BadRequest(ModelState);
-        }
-
         _logger.LogInformation("Processing refund request for payment {PaymentId}", refundRequest.PaymentId);
 
         var response = await _paymentService.RefundPaymentAsync(refundRequest);

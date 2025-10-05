@@ -53,8 +53,7 @@ public class ProductService : IProductService
             StockQuantity = createProductDto.StockQuantity,
             SKU = createProductDto.SKU,
             ImageUrl = createProductDto.ImageUrl,
-            CategoryId = createProductDto.CategoryId,
-            IsActive = true
+            CategoryId = createProductDto.CategoryId
         };
 
         var createdProduct = await _productRepository.AddAsync(product);
@@ -78,7 +77,6 @@ public class ProductService : IProductService
         product.SKU = updateProductDto.SKU;
         product.ImageUrl = updateProductDto.ImageUrl;
         product.CategoryId = updateProductDto.CategoryId;
-        product.IsActive = updateProductDto.IsActive;
 
         var updatedProduct = await _productRepository.UpdateAsync(product);
         return MapToDto(updatedProduct);
@@ -86,6 +84,11 @@ public class ProductService : IProductService
 
     public async Task DeleteProductAsync(int id)
     {
+        // Check if product exists
+        var product = await _productRepository.GetByIdAsync(id);
+        if (product == null)
+            throw new ArgumentException("Product not found");
+
         await _productRepository.DeleteAsync(id);
     }
 
@@ -101,7 +104,6 @@ public class ProductService : IProductService
             StockQuantity = product.StockQuantity,
             SKU = product.SKU,
             ImageUrl = product.ImageUrl,
-            IsActive = product.IsActive,
             CategoryId = product.CategoryId,
             CategoryName = product.Category?.Name ?? string.Empty,
             CreatedAt = product.CreatedAt

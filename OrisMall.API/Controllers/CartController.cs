@@ -32,12 +32,6 @@ public class CartController : ControllerBase
     [HttpPost("add")]
     public async Task<ActionResult<CartDto>> AddToCart(AddToCartDto addToCartDto)
     {
-        if (!ModelState.IsValid)
-        {
-            _logger.LogWarning("Invalid add to cart request model state");
-            return BadRequest(ModelState);
-        }
-
         var sessionId = GetOrCreateSessionId();
         _logger.LogInformation("Adding product {ProductId} to cart for session {SessionId}", addToCartDto.ProductId, sessionId);
         
@@ -50,12 +44,6 @@ public class CartController : ControllerBase
     [HttpPut("update")]
     public async Task<IActionResult> UpdateCartItem(UpdateCartItemDto updateCartItemDto)
     {
-        if (!ModelState.IsValid)
-        {
-            _logger.LogWarning("Invalid update cart item request model state");
-            return BadRequest(ModelState);
-        }
-
         var sessionId = GetOrCreateSessionId();
         _logger.LogInformation("Updating cart item {ProductId} for session {SessionId}", updateCartItemDto.ProductId, sessionId);
         

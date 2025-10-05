@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using OrisMall.Core.DTOs;
 using OrisMall.Core.Interfaces;
 
@@ -17,6 +18,54 @@ public class CategoriesController : ControllerBase
         _logger = logger;
     }
 
+    /// <summary>
+    /// Create new category (admin only)
+    /// </summary>
+    /// <returns>Created category information</returns>
+    [HttpPost]
+    [Authorize(Policy = "AdminOnly")]
+    public async Task<ActionResult<CategoryDto>> CreateCategory(CreateCategoryDto createCategoryDto)
+    {
+        _logger.LogInformation("Creating category with name {CategoryName}", createCategoryDto.Name);
+        
+        var category = await _categoryService.CreateCategoryAsync(createCategoryDto);
+        
+        _logger.LogInformation("Category created successfully with ID {CategoryId}", category.Id);
+        return CreatedAtAction(nameof(GetCategory), new { id = category.Id }, category);
+    }
+
+    /// <summary>
+    /// Update existing category (admin only)
+    /// </summary>
+    /// <returns>No content on success</returns>
+    [HttpPut("{id}")]
+    [Authorize(Policy = "AdminOnly")]
+    public async Task<IActionResult> UpdateCategory(int id, UpdateCategoryDto updateCategoryDto)
+    {
+        _logger.LogInformation("Updating category with ID {CategoryId}", id);
+        
+        await _categoryService.UpdateCategoryAsync(id, updateCategoryDto);
+        
+        _logger.LogInformation("Category updated successfully with ID {CategoryId}", id);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Delete category (admin only)
+    /// </summary>
+    /// <returns>No content on success</returns>
+    [HttpDelete("{id}")]
+    [Authorize(Policy = "AdminOnly")]
+    public async Task<IActionResult> DeleteCategory(int id)
+    {
+        await _categoryService.DeleteCategoryAsync(id);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Get all categories
+    /// </summary>
+    /// <returns>List of all categories</returns>
     [HttpGet]
     public async Task<ActionResult<IEnumerable<CategoryDto>>> GetCategories()
     {
@@ -28,6 +77,10 @@ public class CategoriesController : ControllerBase
         return Ok(categories);
     }
 
+    /// <summary>
+    /// Get category by ID
+    /// </summary>
+    /// <returns>Category information</returns>
     [HttpGet("{id}")]
     public async Task<ActionResult<CategoryDto>> GetCategory(int id)
     {
@@ -44,44 +97,27 @@ public class CategoriesController : ControllerBase
         return Ok(category);
     }
 
-    [HttpPost]
-    public async Task<ActionResult<CategoryDto>> CreateCategory(CreateCategoryDto createCategoryDto)
+
+    /// <summary>
+    /// Search categories by name
+    /// </summary>
+    /// <returns>List of matching categories</returns>
+    [HttpGet("search")]
+    public async Task<ActionResult<IEnumerable<CategoryDto>>> SearchCategories([FromQuery] string name)
     {
-        if (!ModelState.IsValid)
+        if (string.IsNullOrWhiteSpace(name))
         {
-            _logger.LogWarning("Invalid category creation request model state");
-            return BadRequest(ModelState);
+            _logger.LogWarning("Search request with empty category name");
+            return BadRequest("Category name is required");
         }
 
-        _logger.LogInformation("Creating category with name {CategoryName}", createCategoryDto.Name);
+        _logger.LogInformation("Searching categories with name: {Name}", name);
         
-        var category = await _categoryService.CreateCategoryAsync(createCategoryDto);
+        var categories = await _categoryService.GetAllCategoriesAsync();
+        var matchingCategories = categories.Where(c => 
+            c.Name.Contains(name, StringComparison.OrdinalIgnoreCase));
         
-        _logger.LogInformation("Category created successfully with ID {CategoryId}", category.Id);
-        return CreatedAtAction(nameof(GetCategory), new { id = category.Id }, category);
-    }
-
-    [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateCategory(int id, UpdateCategoryDto updateCategoryDto)
-    {
-        if (!ModelState.IsValid)
-        {
-            _logger.LogWarning("Invalid category update request model state for category ID {CategoryId}", id);
-            return BadRequest(ModelState);
-        }
-
-        _logger.LogInformation("Updating category with ID {CategoryId}", id);
-        
-        await _categoryService.UpdateCategoryAsync(id, updateCategoryDto);
-        
-        _logger.LogInformation("Category updated successfully with ID {CategoryId}", id);
-        return NoContent();
-    }
-
-    [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteCategory(int id)
-    {
-        await _categoryService.DeleteCategoryAsync(id);
-        return NoContent();
+        _logger.LogInformation("Category search completed for name '{Name}': {CategoryCount} categories found", name, matchingCategories.Count());
+        return Ok(matchingCategories);
     }
 }

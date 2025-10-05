@@ -11,7 +11,6 @@ public class ProductDto
     public int StockQuantity { get; set; }
     public string? SKU { get; set; }
     public string? ImageUrl { get; set; }
-    public bool IsActive { get; set; }
     public int CategoryId { get; set; }
     public string CategoryName { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
@@ -71,8 +70,6 @@ public class UpdateProductDto
     
     [Required]
     public int CategoryId { get; set; }
-    
-    public bool IsActive { get; set; }
 
 }
 

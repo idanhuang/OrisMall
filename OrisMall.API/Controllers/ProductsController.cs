@@ -104,12 +104,6 @@ public class ProductsController : ControllerBase
     [Authorize(Policy = "AdminOnly")]
     public async Task<ActionResult<ProductDto>> CreateProduct(CreateProductDto createProductDto)
     {
-        if (!ModelState.IsValid)
-        {
-            _logger.LogWarning("Invalid product creation request model state");
-            return BadRequest(ModelState);
-        }
-
         _logger.LogInformation("Creating product with name {ProductName}", createProductDto.Name);
         
         var product = await _productService.CreateProductAsync(createProductDto);
@@ -122,12 +116,6 @@ public class ProductsController : ControllerBase
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> UpdateProduct(int id, UpdateProductDto updateProductDto)
     {
-        if (!ModelState.IsValid)
-        {
-            _logger.LogWarning("Invalid product update request model state for product ID {ProductId}", id);
-            return BadRequest(ModelState);
-        }
-
         try
         {
             _logger.LogInformation("Updating product with ID {ProductId}", id);

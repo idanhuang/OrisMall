@@ -17,7 +17,6 @@ public static class MockDataHelper
                 Name = "Electronics",
                 Description = "Electronic devices",
                 ImageUrl = "https://example.com/electronics.jpg",
-                IsActive = true,
                 CreatedAt = DateTime.UtcNow.AddDays(-30)
             },
             new CategoryDto
@@ -26,7 +25,6 @@ public static class MockDataHelper
                 Name = "Clothing",
                 Description = "Fashion and apparel",
                 ImageUrl = "https://example.com/clothing.jpg",
-                IsActive = true,
                 CreatedAt = DateTime.UtcNow.AddDays(-25)
             }
         };
@@ -45,7 +43,6 @@ public static class MockDataHelper
                 StockQuantity = 50,
                 SKU = "PHONE001",
                 ImageUrl = "https://example.com/smartphone.jpg",
-                IsActive = true,
                 CreatedAt = DateTime.UtcNow.AddDays(-15),
                 CategoryId = 1,
                 CategoryName = "Electronics"
@@ -59,7 +56,6 @@ public static class MockDataHelper
                 StockQuantity = 25,
                 SKU = "LAPTOP001",
                 ImageUrl = "https://example.com/laptop.jpg",
-                IsActive = true,
                 CreatedAt = DateTime.UtcNow.AddDays(-10),
                 CategoryId = 1,
                 CategoryName = "Electronics"
@@ -78,7 +74,6 @@ public static class MockDataHelper
                 Name = "Electronics",
                 Description = "Electronic devices",
                 ImageUrl = "https://example.com/electronics.jpg",
-                IsActive = true,
                 CreatedAt = DateTime.UtcNow.AddDays(-30),
                 UpdatedAt = null
             },
@@ -88,7 +83,6 @@ public static class MockDataHelper
                 Name = "Clothing",
                 Description = "Fashion and apparel",
                 ImageUrl = "https://example.com/clothing.jpg",
-                IsActive = true,
                 CreatedAt = DateTime.UtcNow.AddDays(-25),
                 UpdatedAt = null
             }
@@ -108,7 +102,6 @@ public static class MockDataHelper
                 StockQuantity = 50,
                 SKU = "PHONE001",
                 ImageUrl = "https://example.com/smartphone.jpg",
-                IsActive = true,
                 CreatedAt = DateTime.UtcNow.AddDays(-15),
                 UpdatedAt = null,
                 CategoryId = 1
@@ -122,7 +115,6 @@ public static class MockDataHelper
                 StockQuantity = 25,
                 SKU = "LAPTOP001",
                 ImageUrl = "https://example.com/laptop.jpg",
-                IsActive = true,
                 CreatedAt = DateTime.UtcNow.AddDays(-10),
                 UpdatedAt = null,
                 CategoryId = 1
@@ -136,7 +128,6 @@ public static class MockDataHelper
                 StockQuantity = 100,
                 SKU = "TSHIRT001",
                 ImageUrl = "https://example.com/tshirt.jpg",
-                IsActive = true,
                 CreatedAt = DateTime.UtcNow.AddDays(-5),
                 UpdatedAt = null,
                 CategoryId = 2
@@ -156,7 +147,6 @@ public static class MockDataHelper
                 LastName = "Huang",
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("password123", BCrypt.Net.BCrypt.GenerateSalt(12)), // BCrypt hash of "password123"
                 PhoneNumber = "+1234567890",
-                IsActive = true,
                 Role = "User",
                 CreatedAt = DateTime.UtcNow.AddDays(-30),
                 LastLoginAt = DateTime.UtcNow.AddDays(-1)
@@ -169,7 +159,6 @@ public static class MockDataHelper
                 LastName = "User",
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin123", BCrypt.Net.BCrypt.GenerateSalt(12)), // BCrypt hash of "admin123"
                 PhoneNumber = "+1234567891",
-                IsActive = true,
                 Role = "Admin",
                 CreatedAt = DateTime.UtcNow.AddDays(-60),
                 LastLoginAt = DateTime.UtcNow.AddHours(-2)

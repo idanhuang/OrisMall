@@ -36,10 +36,10 @@ public class CachedProductService : IProductService
         
         var cacheOptions = new MemoryCacheEntryOptions
         {
-            AbsoluteExpirationRelativeToNow = _productCacheDuration,
-            SlidingExpiration = TimeSpan.FromMinutes(10),
+            AbsoluteExpirationRelativeToNow = _productCacheDuration, // Cache expires after 30 minutes regardless of access
+            SlidingExpiration = TimeSpan.FromMinutes(30), // Cache expires after 30 minutes of no access
             Priority = CacheItemPriority.High,
-            Size = 5 // Products list is larger, assign higher size
+            Size = 5
         };
         _cache.Set(cacheKey, products, cacheOptions);
         return products;
@@ -66,8 +66,8 @@ public class CachedProductService : IProductService
         {
             var cacheOptions = new MemoryCacheEntryOptions
             {
-                AbsoluteExpirationRelativeToNow = _productCacheDuration,
-                SlidingExpiration = TimeSpan.FromMinutes(10),
+                AbsoluteExpirationRelativeToNow = _productCacheDuration, // Cache expires after 30 minutes regardless of access
+                SlidingExpiration = TimeSpan.FromMinutes(30), // Cache expires after 30 minutes of no access
                 Priority = CacheItemPriority.Normal,
                 Size = 1
             };
@@ -89,8 +89,8 @@ public class CachedProductService : IProductService
         
         var cacheOptions = new MemoryCacheEntryOptions
         {
-            AbsoluteExpirationRelativeToNow = _productCacheDuration,
-            SlidingExpiration = TimeSpan.FromMinutes(10),
+            AbsoluteExpirationRelativeToNow = _productCacheDuration, // Cache expires after 30 minutes regardless of access
+            SlidingExpiration = TimeSpan.FromMinutes(30), // Cache expires after 30 minutes of no access
             Priority = CacheItemPriority.Normal,
             Size = 3
         };
@@ -177,9 +177,6 @@ public class CachedProductService : IProductService
     {
         // Remove product list caches
         _cache.Remove("products:all");
-        
-        // Note: Category-specific and search caches will expire naturally
-        // In a more sophisticated implementation, we could track and invalidate specific caches
     }
 
     private void InvalidateSpecificProductCache(int productId)

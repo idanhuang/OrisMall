@@ -7,10 +7,12 @@ namespace OrisMall.Infrastructure.Services;
 public class CategoryService : ICategoryService
 {
     private readonly ICategoryRepository _categoryRepository;
+    private readonly IProductRepository _productRepository;
 
-    public CategoryService(ICategoryRepository categoryRepository)
+    public CategoryService(ICategoryRepository categoryRepository, IProductRepository productRepository)
     {
         _categoryRepository = categoryRepository;
+        _productRepository = productRepository;
     }
 
     public async Task<IEnumerable<CategoryDto>> GetAllCategoriesAsync()
@@ -27,12 +29,15 @@ public class CategoryService : ICategoryService
 
     public async Task<CategoryDto> CreateCategoryAsync(CreateCategoryDto createCategoryDto)
     {
+        // Check if category name already exists
+        if (await _categoryRepository.NameExistsAsync(createCategoryDto.Name))
+            throw new ArgumentException("Category name already exists");
+
         var category = new Category
         {
             Name = createCategoryDto.Name,
             Description = createCategoryDto.Description,
-            ImageUrl = createCategoryDto.ImageUrl,
-            IsActive = true
+            ImageUrl = createCategoryDto.ImageUrl
         };
 
         var createdCategory = await _categoryRepository.AddAsync(category);
@@ -48,7 +53,6 @@ public class CategoryService : ICategoryService
         category.Name = updateCategoryDto.Name;
         category.Description = updateCategoryDto.Description;
         category.ImageUrl = updateCategoryDto.ImageUrl;
-        category.IsActive = updateCategoryDto.IsActive;
 
         var updatedCategory = await _categoryRepository.UpdateAsync(category);
         return MapToDto(updatedCategory);
@@ -56,6 +60,15 @@ public class CategoryService : ICategoryService
 
     public async Task DeleteCategoryAsync(int id)
     {
+        // Check if category exists
+        var category = await _categoryRepository.GetByIdAsync(id);
+        if (category == null)
+            throw new ArgumentException("Category not found");
+
+        // Check if category has products
+        if (await _productRepository.HasProductsInCategoryAsync(id))
+            throw new InvalidOperationException("Cannot delete category that has products");
+
         await _categoryRepository.DeleteAsync(id);
     }
 
@@ -67,7 +80,6 @@ public class CategoryService : ICategoryService
             Name = category.Name,
             Description = category.Description,
             ImageUrl = category.ImageUrl,
-            IsActive = category.IsActive,
             CreatedAt = category.CreatedAt
         };
     }

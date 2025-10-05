@@ -17,14 +17,13 @@ public class CategoryRepository : ICategoryRepository
     public async Task<IEnumerable<Category>> GetAllAsync()
     {
         return await _context.Categories
-            .Where(c => c.IsActive)
             .ToListAsync();
     }
 
     public async Task<Category?> GetByIdAsync(int id)
     {
         return await _context.Categories
-            .FirstOrDefaultAsync(c => c.Id == id && c.IsActive);
+            .FirstOrDefaultAsync(c => c.Id == id);
     }
 
     public async Task<Category> AddAsync(Category category)
@@ -48,15 +47,19 @@ public class CategoryRepository : ICategoryRepository
         var category = await _context.Categories.FindAsync(id);
         if (category != null)
         {
-            category.IsActive = false;
-            category.UpdatedAt = DateTime.UtcNow;
+            _context.Categories.Remove(category);
             await _context.SaveChangesAsync();
         }
     }
 
     public async Task<bool> ExistsAsync(int id)
     {
-        return await _context.Categories.AnyAsync(c => c.Id == id && c.IsActive);
+        return await _context.Categories.AnyAsync(c => c.Id == id);
+    }
+
+    public async Task<bool> NameExistsAsync(string name)
+    {
+        return await _context.Categories.AnyAsync(c => c.Name == name);
     }
 }
 

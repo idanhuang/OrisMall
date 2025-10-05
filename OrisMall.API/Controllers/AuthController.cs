@@ -116,7 +116,7 @@ public class AuthController : ControllerBase
     /// Create new admin user (admin only)
     /// </summary>
     /// <returns>Created admin user</returns>
-    [HttpPost("admin/create")]
+    [HttpPost("admin")]
     [Authorize(Policy = "AdminOnly")]
     public async Task<ActionResult<UserDto>> CreateAdmin(RegisterDto registerDto)
     {
@@ -132,7 +132,7 @@ public class AuthController : ControllerBase
     /// Setup first admin account (bootstrap)
     /// </summary>
     /// <returns>Created first admin user</returns>
-    [HttpPost("admin/setup-first")]
+    [HttpPost("setup-super-admin")]
     public async Task<ActionResult<UserDto>> SetupFirstAdmin(RegisterDto registerDto)
     {
         _logger.LogInformation("Setting up first admin user with email {Email}", registerDto.Email);

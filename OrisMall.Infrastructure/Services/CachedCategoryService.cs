@@ -6,9 +6,9 @@ namespace OrisMall.Infrastructure.Services;
 
 public class CachedCategoryService : ICategoryService
 {
-    private readonly CategoryService _categoryService; // Inject concrete service
+    private readonly CategoryService _categoryService;
     private readonly IMemoryCache _cache;
-    private readonly TimeSpan _defaultCacheDuration = TimeSpan.FromHours(2); // Categories change rarely
+    private readonly TimeSpan _defaultCacheDuration = TimeSpan.FromHours(2);
 
     public CachedCategoryService(CategoryService categoryService, IMemoryCache cache)
     {
@@ -35,8 +35,8 @@ public class CachedCategoryService : ICategoryService
         
         var cacheOptions = new MemoryCacheEntryOptions
         {
-            AbsoluteExpirationRelativeToNow = _defaultCacheDuration,
-            SlidingExpiration = TimeSpan.FromMinutes(30), // Extend cache if accessed within 30 minutes
+            AbsoluteExpirationRelativeToNow = _defaultCacheDuration, // Hard deadline: cache expires after 2 hours regardless of access
+            SlidingExpiration = TimeSpan.FromMinutes(30), // Cache expires after 30 minutes of no access
             Priority = CacheItemPriority.High, // Categories are important, don't evict easily
             Size = 1 // For size-based eviction
         };
@@ -65,8 +65,8 @@ public class CachedCategoryService : ICategoryService
         {
             var cacheOptions = new MemoryCacheEntryOptions
             {
-                AbsoluteExpirationRelativeToNow = _defaultCacheDuration,
-                SlidingExpiration = TimeSpan.FromMinutes(30),
+                AbsoluteExpirationRelativeToNow = _defaultCacheDuration, // cache expires after 2 hours regardless of access
+                SlidingExpiration = TimeSpan.FromMinutes(30), // Cache expires after 30 minutes of no access
                 Priority = CacheItemPriority.High,
                 Size = 1
             };
@@ -89,7 +89,6 @@ public class CachedCategoryService : ICategoryService
     {
         var category = await _categoryService.UpdateCategoryAsync(id, updateCategoryDto);
         
-        // Invalidate cache when category is updated
         InvalidateCache();
         
         return category;
@@ -99,7 +98,6 @@ public class CachedCategoryService : ICategoryService
     {
         await _categoryService.DeleteCategoryAsync(id);
         
-        // Invalidate cache when category is deleted
         InvalidateCache();
     }
 
@@ -107,8 +105,5 @@ public class CachedCategoryService : ICategoryService
     {
         // Remove all categories from cache when data changes
         _cache.Remove("categories:all");
-        
-        // Note: Individual category cache entries will expire naturally
-        // or we could implement a more sophisticated cache invalidation strategy
     }
 }

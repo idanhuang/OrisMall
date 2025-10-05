@@ -10,6 +10,7 @@ public class CachedCategoryServiceTests : IDisposable
 {
     private readonly Mock<ICategoryService> _mockCategoryService;
     private readonly Mock<ICategoryRepository> _mockRepository;
+    private readonly Mock<IProductRepository> _mockProductRepository;
     private readonly IMemoryCache _memoryCache;
     private readonly CachedCategoryService _cachedCategoryService;
     private readonly CategoryService _realCategoryService;
@@ -18,10 +19,11 @@ public class CachedCategoryServiceTests : IDisposable
     {
         _mockCategoryService = new Mock<ICategoryService>();
         _mockRepository = new Mock<ICategoryRepository>();
+        _mockProductRepository = new Mock<IProductRepository>();
         _memoryCache = new MemoryCache(new MemoryCacheOptions());
         
         // Create a real CategoryService instance to pass to CachedCategoryService
-        _realCategoryService = new CategoryService(_mockRepository.Object);
+        _realCategoryService = new CategoryService(_mockRepository.Object, _mockProductRepository.Object);
         _cachedCategoryService = new CachedCategoryService(_realCategoryService, _memoryCache);
     }
 
