@@ -110,6 +110,15 @@ public class ProductRepository : IProductRepository
 
         if (page.HasValue && pageSize.HasValue && page.Value > 0 && pageSize.Value > 0)
         {
+            // Pagination Formula Explanation:
+            // skip = (page - 1) * pageSize
+            // 
+            // Why (page - 1)?
+            // - Page 1 should start at item 0 (no items to skip)
+            // - Page 2 should start at item pageSize (skip 1 page worth of items)
+            // - Page 3 should start at item 2*pageSize (skip 2 pages worth of items)
+            // - So we need (page - 1) to convert 1-based page numbers to 0-based skip counts
+
             int skip = (page.Value - 1) * pageSize.Value;
             query = query.Skip(skip).Take(pageSize.Value);
         }

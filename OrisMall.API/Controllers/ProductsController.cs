@@ -18,6 +18,10 @@ public class ProductsController : ControllerBase
         _logger = logger;
     }
 
+    /// <summary>
+    /// Get all products
+    /// </summary>
+    /// <returns>List of all products</returns>
     [HttpGet]
     public async Task<ActionResult<IEnumerable<ProductDto>>> GetProducts()
     {
@@ -29,6 +33,10 @@ public class ProductsController : ControllerBase
         return Ok(products);
     }
 
+    /// <summary>
+    /// Get product by ID
+    /// </summary>
+    /// <returns>Product information</returns>
     [HttpGet("{id}")]
     public async Task<ActionResult<ProductDto>> GetProduct(int id)
     {
@@ -45,6 +53,10 @@ public class ProductsController : ControllerBase
         return Ok(product);
     }
 
+    /// <summary>
+    /// Get products by category ID
+    /// </summary>
+    /// <returns>List of products in the specified category</returns>
     [HttpGet("category/{categoryId}")]
     public async Task<ActionResult<IEnumerable<ProductDto>>> GetProductsByCategory(int categoryId)
     {
@@ -56,6 +68,10 @@ public class ProductsController : ControllerBase
         return Ok(products);
     }
 
+    /// <summary>
+    /// Filter products with various criteria
+    /// </summary>
+    /// <returns>Filtered products with pagination</returns>
     [HttpGet("filter")]
     public async Task<ActionResult<object>> FilterProducts([FromQuery] string? name, [FromQuery] int? categoryId,
         [FromQuery] decimal? minPrice, [FromQuery] decimal? maxPrice, [FromQuery] bool? inStock,
@@ -83,6 +99,10 @@ public class ProductsController : ControllerBase
         return Ok(new { total, items });
     }
 
+    /// <summary>
+    /// Search products by name or description
+    /// </summary>
+    /// <returns>List of matching products</returns>
     [HttpGet("search")]
     public async Task<ActionResult<IEnumerable<ProductDto>>> SearchProducts([FromQuery] string q)
     {
@@ -100,6 +120,10 @@ public class ProductsController : ControllerBase
         return Ok(products);
     }
 
+    /// <summary>
+    /// Create new product (admin only)
+    /// </summary>
+    /// <returns>Created product information</returns>
     [HttpPost]
     [Authorize(Policy = "AdminOnly")]
     public async Task<ActionResult<ProductDto>> CreateProduct(CreateProductDto createProductDto)
@@ -112,38 +136,35 @@ public class ProductsController : ControllerBase
         return CreatedAtAction(nameof(GetProduct), new { id = product.Id }, product);
     }
 
+    /// <summary>
+    /// Update existing product (admin only)
+    /// </summary>
+    /// <returns>No content on success</returns>
     [HttpPut("{id}")]
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> UpdateProduct(int id, UpdateProductDto updateProductDto)
     {
-        try
-        {
-            _logger.LogInformation("Updating product with ID {ProductId}", id);
-            
-            await _productService.UpdateProductAsync(id, updateProductDto);
-            
-            _logger.LogInformation("Product updated successfully with ID {ProductId}", id);
-            return NoContent();
-        }
-        catch (ArgumentException ex)
-        {
-            _logger.LogWarning("Product update failed for ID {ProductId}: {Message}", id, ex.Message);
-            return BadRequest(ex.Message);
-        }
+        _logger.LogInformation("Updating product with ID {ProductId}", id);
+        
+        await _productService.UpdateProductAsync(id, updateProductDto);
+        
+        _logger.LogInformation("Product updated successfully with ID {ProductId}", id);
+        return NoContent();
     }
 
+    /// <summary>
+    /// Delete product (admin only)
+    /// </summary>
+    /// <returns>No content on success</returns>
     [HttpDelete("{id}")]
     [Authorize(Policy = "AdminOnly")]
     public async Task<IActionResult> DeleteProduct(int id)
     {
-        try
-        {
-            await _productService.DeleteProductAsync(id);
-            return NoContent();
-        }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(ex.Message);
-        }
+        _logger.LogInformation("Deleting product with ID {ProductId}", id);
+        
+        await _productService.DeleteProductAsync(id);
+        
+        _logger.LogInformation("Product deleted successfully with ID {ProductId}", id);
+        return NoContent();
     }
 }
