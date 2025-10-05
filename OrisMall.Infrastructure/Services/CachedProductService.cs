@@ -38,8 +38,7 @@ public class CachedProductService : IProductService
         {
             AbsoluteExpirationRelativeToNow = _productCacheDuration, // Cache expires after 30 minutes regardless of access
             SlidingExpiration = TimeSpan.FromMinutes(30), // Cache expires after 30 minutes of no access
-            Priority = CacheItemPriority.High,
-            Size = 5
+            Priority = CacheItemPriority.High
         };
         _cache.Set(cacheKey, products, cacheOptions);
         return products;
@@ -68,8 +67,7 @@ public class CachedProductService : IProductService
             {
                 AbsoluteExpirationRelativeToNow = _productCacheDuration, // Cache expires after 30 minutes regardless of access
                 SlidingExpiration = TimeSpan.FromMinutes(30), // Cache expires after 30 minutes of no access
-                Priority = CacheItemPriority.Normal,
-                Size = 1
+                Priority = CacheItemPriority.Normal
             };
             _cache.Set(cacheKey, product, cacheOptions);
         }
@@ -91,8 +89,7 @@ public class CachedProductService : IProductService
         {
             AbsoluteExpirationRelativeToNow = _productCacheDuration, // Cache expires after 30 minutes regardless of access
             SlidingExpiration = TimeSpan.FromMinutes(30), // Cache expires after 30 minutes of no access
-            Priority = CacheItemPriority.Normal,
-            Size = 3
+            Priority = CacheItemPriority.Normal
         };
         _cache.Set(cacheKey, products, cacheOptions);
         return products;
@@ -114,8 +111,7 @@ public class CachedProductService : IProductService
         var cacheOptions = new MemoryCacheEntryOptions
         {
             AbsoluteExpirationRelativeToNow = _searchCacheDuration, // Shorter cache for search
-            Priority = CacheItemPriority.Low, // Search results can be evicted more easily
-            Size = 2
+            Priority = CacheItemPriority.Low // Search results can be evicted more easily
         };
         _cache.Set(cacheKey, products, cacheOptions);
         return products;
@@ -136,8 +132,7 @@ public class CachedProductService : IProductService
         var cacheOptions = new MemoryCacheEntryOptions
         {
             AbsoluteExpirationRelativeToNow = _searchCacheDuration, // Shorter cache for filters
-            Priority = CacheItemPriority.Low,
-            Size = 2
+            Priority = CacheItemPriority.Low
         };
         _cache.Set(cacheKey, result, cacheOptions);
         return result;

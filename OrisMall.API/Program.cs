@@ -8,7 +8,6 @@ using OrisMall.Infrastructure.Data;
 using OrisMall.Infrastructure.Repositories;
 using OrisMall.Infrastructure.Services;
 using OrisMall.Core.Interfaces;
-using OrisMall.Core.Configuration;
 using OrisMall.API.Middleware;
 using Serilog;
 
@@ -35,13 +34,8 @@ builder.Services.AddSession(options =>
 });
 
 // ===== CACHING =====
-// Load Memory cache configuration & Register IMemoryCache in DI container
-builder.Services.AddMemoryCache(options =>
-{
-    var cacheConfig = builder.Configuration.GetSection(CacheOptions.SectionName).Get<CacheOptions>() ?? new CacheOptions();
-    options.SizeLimit = cacheConfig.SizeLimit;
-    options.CompactionPercentage = cacheConfig.CompactionPercentage;
-});
+// Register IMemoryCache in DI container with pure LRU eviction (no size limits)
+builder.Services.AddMemoryCache();
 
 // ===== SWAGGER DOCUMENTATION =====
 builder.Services.AddSwaggerGen(c =>

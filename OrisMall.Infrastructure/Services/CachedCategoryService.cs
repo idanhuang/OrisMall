@@ -6,11 +6,11 @@ namespace OrisMall.Infrastructure.Services;
 
 public class CachedCategoryService : ICategoryService
 {
-    private readonly CategoryService _categoryService;
+    private readonly ICategoryService _categoryService;
     private readonly IMemoryCache _cache;
     private readonly TimeSpan _defaultCacheDuration = TimeSpan.FromHours(2);
 
-    public CachedCategoryService(CategoryService categoryService, IMemoryCache cache)
+    public CachedCategoryService(ICategoryService categoryService, IMemoryCache cache)
     {
         _categoryService = categoryService;
         _cache = cache;
@@ -37,8 +37,7 @@ public class CachedCategoryService : ICategoryService
         {
             AbsoluteExpirationRelativeToNow = _defaultCacheDuration, // Hard deadline: cache expires after 2 hours regardless of access
             SlidingExpiration = TimeSpan.FromMinutes(30), // Cache expires after 30 minutes of no access
-            Priority = CacheItemPriority.High, // Categories are important, don't evict easily
-            Size = 1 // For size-based eviction
+            Priority = CacheItemPriority.High // Categories are important, don't evict easily
         };
         _cache.Set(cacheKey, categories, cacheOptions);
         return categories;
@@ -67,8 +66,7 @@ public class CachedCategoryService : ICategoryService
             {
                 AbsoluteExpirationRelativeToNow = _defaultCacheDuration, // cache expires after 2 hours regardless of access
                 SlidingExpiration = TimeSpan.FromMinutes(30), // Cache expires after 30 minutes of no access
-                Priority = CacheItemPriority.High,
-                Size = 1
+                Priority = CacheItemPriority.High
             };
             _cache.Set(cacheKey, category, cacheOptions);
         }
