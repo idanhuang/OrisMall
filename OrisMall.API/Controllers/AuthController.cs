@@ -62,7 +62,7 @@ public class AuthController : ControllerBase
     /// <returns>Success message</returns>
     [HttpPost("logout")]
     [Authorize]
-    public async Task<ActionResult> Logout()
+    public Task<ActionResult> Logout()
     {
         var userId = GetCurrentUserId();
         _logger.LogInformation("User logout for ID {UserId}", userId);
@@ -71,7 +71,7 @@ public class AuthController : ControllerBase
         // Here, we just log the logout.
         _logger.LogInformation("User logged out successfully for ID {UserId}", userId);
 
-        return Ok(new { message = "Logged out successfully" });
+        return Task.FromResult<ActionResult>(Ok(new { message = "Logged out successfully" }));
     }
 
 
@@ -102,11 +102,11 @@ public class AuthController : ControllerBase
     /// <returns>Updated user information</returns>
     [HttpPut("profile/update-profile")]
     [Authorize]
-    public async Task<ActionResult<UserDto>> UpdateProfile(UpdateProfileDto updateDto)
+    public Task<ActionResult<UserDto>> UpdateProfile(UpdateProfileDto updateDto)
     {
         // TODO: Add rate limiting (e.g., 1 requests per day)
         // TODO: Implement profile update functionality
-        return Ok(new { message = "Profile update not implemented yet" });
+        return Task.FromResult<ActionResult<UserDto>>(Ok(new { message = "Profile update not implemented yet" }));
     }
 
     /// <summary>
@@ -117,11 +117,11 @@ public class AuthController : ControllerBase
     /// <returns>Success message</returns>
     [HttpPost("change-password")]
     [Authorize]
-    public async Task<ActionResult> ChangePassword(ChangePasswordDto changePasswordDto)
+    public Task<ActionResult> ChangePassword(ChangePasswordDto changePasswordDto)
     {
         // TODO: Add rate limiting (e.g., 1 requests per day)
         // TODO: Implement password change functionality
-        return Ok(new { message = "Password change not implemented yet" });
+        return Task.FromResult<ActionResult>(Ok(new { message = "Password change not implemented yet" }));
     }
 
     /// <summary>

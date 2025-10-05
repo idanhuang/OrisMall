@@ -69,7 +69,7 @@ public class CartService : ICartService
             {
                 ProductId = product.Id,
                 ProductName = product.Name,
-                ProductDescription = product.Description,
+                ProductDescription = product.Description ?? string.Empty,
                 UnitPrice = product.Price,
                 Quantity = addToCartDto.Quantity,
                 TotalPrice = product.Price * addToCartDto.Quantity,
@@ -141,11 +141,12 @@ public class CartService : ICartService
         return cart.TotalItems;
     }
 
-    private async Task UpdateCartTotalsAsync(CartDto cart)
+    private Task UpdateCartTotalsAsync(CartDto cart)
     {
         cart.TotalItems = cart.Items.Sum(x => x.Quantity);
         cart.TotalAmount = cart.Items.Sum(x => x.TotalPrice);
         cart.UpdatedAt = DateTime.UtcNow;
+        return Task.CompletedTask;
     }
 
     private async Task SaveCartAsync(string sessionId, CartDto cart)
