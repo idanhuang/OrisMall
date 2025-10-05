@@ -157,7 +157,6 @@ public static class MockDataHelper
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("password123", BCrypt.Net.BCrypt.GenerateSalt(12)), // BCrypt hash of "password123"
                 PhoneNumber = "+1234567890",
                 IsActive = true,
-                IsEmailVerified = true,
                 Role = "User",
                 CreatedAt = DateTime.UtcNow.AddDays(-30),
                 LastLoginAt = DateTime.UtcNow.AddDays(-1)
@@ -171,7 +170,6 @@ public static class MockDataHelper
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin123", BCrypt.Net.BCrypt.GenerateSalt(12)), // BCrypt hash of "admin123"
                 PhoneNumber = "+1234567891",
                 IsActive = true,
-                IsEmailVerified = true,
                 Role = "Admin",
                 CreatedAt = DateTime.UtcNow.AddDays(-60),
                 LastLoginAt = DateTime.UtcNow.AddHours(-2)

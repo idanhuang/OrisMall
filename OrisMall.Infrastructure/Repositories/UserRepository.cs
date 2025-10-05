@@ -70,4 +70,3 @@ public class UserRepository : IUserRepository
         return await _context.Users.AnyAsync(u => u.Email == email && u.IsActive);
     }
 }
-

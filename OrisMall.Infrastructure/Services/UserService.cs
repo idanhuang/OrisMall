@@ -21,13 +21,6 @@ public class UserService : IUserService
         _configuration = configuration;
     }
 
-    public async Task<UserDto?> GetUserByIdAsync(int id)
-    {
-        var user = await _userRepository.GetByIdAsync(id);
-        return user != null ? MapToDto(user) : null;
-    }
-
-
     public async Task<UserDto> RegisterAsync(RegisterDto registerDto)
     {
         if (await _userRepository.EmailExistsAsync(registerDto.Email))
@@ -41,7 +34,6 @@ public class UserService : IUserService
             PasswordHash = HashPassword(registerDto.Password),
             PhoneNumber = registerDto.PhoneNumber,
             IsActive = true,
-            IsEmailVerified = false,
             Role = "User"
         };
 
@@ -62,7 +54,6 @@ public class UserService : IUserService
             PasswordHash = HashPassword(registerDto.Password),
             PhoneNumber = registerDto.PhoneNumber,
             IsActive = true,
-            IsEmailVerified = true, // Admin users are automatically verified
             Role = "Admin"
         };
 
@@ -88,7 +79,6 @@ public class UserService : IUserService
             PasswordHash = HashPassword(registerDto.Password),
             PhoneNumber = registerDto.PhoneNumber,
             IsActive = true,
-            IsEmailVerified = true, // First admin is automatically verified
             Role = "Admin"
         };
 
@@ -101,6 +91,9 @@ public class UserService : IUserService
         var user = await _userRepository.GetByEmailAsync(loginDto.Email);
         if (user == null || !VerifyPassword(loginDto.Password, user.PasswordHash))
             throw new UnauthorizedException("Invalid email or password");
+        
+        if (!user.IsActive)
+            throw new UnauthorizedException("Account is deactivated");
 
         user.LastLoginAt = DateTime.UtcNow;
         await _userRepository.UpdateAsync(user);
@@ -116,10 +109,15 @@ public class UserService : IUserService
         };
     }
 
-    public async Task<bool> EmailExistsAsync(string email)
+    public async Task<UserDto> GetCurrentUserAsync(int userId)
     {
-        return await _userRepository.EmailExistsAsync(email);
+        var user = await _userRepository.GetByIdAsync(userId);
+        if (user == null)
+            throw new NotFoundException("User", userId);
+        
+        return MapToDto(user);
     }
+
 
     private string HashPassword(string password)
     {
@@ -166,7 +164,6 @@ public class UserService : IUserService
             LastName = user.LastName,
             PhoneNumber = user.PhoneNumber,
             IsActive = user.IsActive,
-            IsEmailVerified = user.IsEmailVerified,
             CreatedAt = user.CreatedAt,
             LastLoginAt = user.LastLoginAt,
             Role = user.Role

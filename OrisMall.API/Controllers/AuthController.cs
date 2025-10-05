@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 using OrisMall.Core.DTOs;
 using OrisMall.Core.Interfaces;
+using OrisMall.Core.Exceptions;
 
 namespace OrisMall.API.Controllers;
 
@@ -18,32 +20,28 @@ public class AuthController : ControllerBase
         _logger = logger;
     }
 
+    /// <summary>
+    /// Register new user account
+    /// </summary>
+    /// <returns>Created user information</returns>
     [HttpPost("register")]
     public async Task<ActionResult<UserDto>> Register(RegisterDto registerDto)
     {
-        if (!ModelState.IsValid)
-        {
-            _logger.LogWarning("Invalid user registration request model state");
-            return BadRequest(ModelState);
-        }
-
         _logger.LogInformation("Registering new user with email {Email}", registerDto.Email);
         
         var user = await _userService.RegisterAsync(registerDto);
         
         _logger.LogInformation("User registered successfully with ID {UserId}", user.Id);
-        return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
+        return CreatedAtAction(nameof(GetCurrentUser), new { }, user);
     }
 
+    /// <summary>
+    /// Authenticate user and return JWT token
+    /// </summary>
+    /// <returns>JWT token and user information</returns>
     [HttpPost("login")]
     public async Task<ActionResult<AuthResponseDto>> Login(LoginDto loginDto)
     {
-        if (!ModelState.IsValid)
-        {
-            _logger.LogWarning("Invalid login request model state");
-            return BadRequest(ModelState);
-        }
-
         _logger.LogInformation("User login attempt for email {Email}", loginDto.Email);
         
         var authResponse = await _userService.LoginAsync(loginDto);
@@ -52,65 +50,111 @@ public class AuthController : ControllerBase
         return Ok(authResponse);
     }
 
-    [HttpGet("user/{id}")]
-    public async Task<ActionResult<UserDto>> GetUser(int id)
+    /// <summary>
+    /// Logout current user
+    /// </summary>
+    /// <returns>Success message</returns>
+    [HttpPost("logout")]
+    [Authorize]
+    public async Task<ActionResult> Logout()
     {
-        _logger.LogInformation("Retrieving user with ID {UserId}", id);
-        
-        var user = await _userService.GetUserByIdAsync(id);
-        if (user == null)
-        {
-            _logger.LogWarning("User {UserId} not found", id);
-            return NotFound();
-        }
+        var userId = GetCurrentUserId();
+        _logger.LogInformation("User logout for ID {UserId}", userId);
 
-        _logger.LogInformation("User {UserId} retrieved successfully", id);
+        // JWT tokens are stateless and can't be invalidated server-side.In production, use a blacklist or refresh tokens.
+        // Here, we just log the logout.
+        _logger.LogInformation("User logged out successfully for ID {UserId}", userId);
+
+        return Ok(new { message = "Logged out successfully" });
+    }
+
+
+    /// <summary>
+    /// Get current user profile
+    /// </summary>
+    /// <returns>Current user information</returns>
+    [HttpGet("profile/get-profile")]
+    [Authorize]
+    public async Task<ActionResult<UserDto>> GetCurrentUser()
+    {
+        var userId = GetCurrentUserId();
+        _logger.LogInformation("Retrieving current user profile for ID {UserId}", userId);
+        
+        var user = await _userService.GetCurrentUserAsync(userId);
+        
+        _logger.LogInformation("Current user profile retrieved successfully for ID {UserId}", userId);
         return Ok(user);
     }
 
-    [HttpGet("email-exists")]
-    public async Task<ActionResult<bool>> EmailExists([FromQuery] string email)
+    /// <summary>
+    /// Update current user profile
+    /// </summary>
+    /// <returns>Updated user information</returns>
+    [HttpPut("profile/update-profile")]
+    [Authorize]
+    public async Task<ActionResult<UserDto>> UpdateProfile(UpdateProfileDto updateDto)
     {
-        _logger.LogInformation("Checking if email exists: {Email}", email);
-        
-        var exists = await _userService.EmailExistsAsync(email);
-        
-        _logger.LogInformation("Email existence check completed for {Email}: {Exists}", email, exists);
-        return Ok(exists);
+        // TODO: Add rate limiting (e.g., 1 requests per day)
+        // TODO: Implement profile update functionality
+        return Ok(new { message = "Profile update not implemented yet" });
     }
 
-    [HttpPost("create-admin")]
+    /// <summary>
+    /// Change current user password
+    /// </summary>
+    /// <returns>Success message</returns>
+    [HttpPost("change-password")]
+    [Authorize]
+    public async Task<ActionResult> ChangePassword(ChangePasswordDto changePasswordDto)
+    {
+        // TODO: Add rate limiting (e.g., 1 requests per day)
+        // TODO: Implement password change functionality
+        return Ok(new { message = "Password change not implemented yet" });
+    }
+
+    /// <summary>
+    /// Create new admin user (admin only)
+    /// </summary>
+    /// <returns>Created admin user</returns>
+    [HttpPost("admin/create")]
     [Authorize(Policy = "AdminOnly")]
     public async Task<ActionResult<UserDto>> CreateAdmin(RegisterDto registerDto)
     {
-        if (!ModelState.IsValid)
-        {
-            _logger.LogWarning("Invalid admin creation request model state");
-            return BadRequest(ModelState);
-        }
-
         _logger.LogInformation("Creating admin user with email {Email}", registerDto.Email);
         
         var user = await _userService.CreateAdminAsync(registerDto);
         
         _logger.LogInformation("Admin user created successfully with ID {UserId}", user.Id);
-        return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
+        return CreatedAtAction(nameof(GetCurrentUser), new { }, user);
     }
 
-    [HttpPost("setup-first-admin")]
+    /// <summary>
+    /// Setup first admin account (bootstrap)
+    /// </summary>
+    /// <returns>Created first admin user</returns>
+    [HttpPost("admin/setup-first")]
     public async Task<ActionResult<UserDto>> SetupFirstAdmin(RegisterDto registerDto)
     {
-        if (!ModelState.IsValid)
-        {
-            _logger.LogWarning("Invalid first admin setup request model state");
-            return BadRequest(ModelState);
-        }
-
         _logger.LogInformation("Setting up first admin user with email {Email}", registerDto.Email);
         
         var user = await _userService.SetupFirstAdminAsync(registerDto);
         
         _logger.LogInformation("First admin user setup successfully with ID {UserId}", user.Id);
-        return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
+        return CreatedAtAction(nameof(GetCurrentUser), new { }, user);
+    }
+
+    /// <summary>
+    /// Get current user ID from JWT token
+    /// </summary>
+    /// <returns>User ID from token</returns>
+    /// <exception cref="UnauthorizedException">Invalid or missing user ID claim</exception>
+    private int GetCurrentUserId()
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
+        {
+            throw new UnauthorizedException("Invalid user token");
+        }
+        return userId;
     }
 }

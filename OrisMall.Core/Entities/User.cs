@@ -8,15 +8,15 @@ public class User
     
     [Required]
     [EmailAddress]
-    [StringLength(255)]
+    [StringLength(100)]
     public string Email { get; set; } = string.Empty;
     
     [Required]
-    [StringLength(100)]
+    [StringLength(20)]
     public string FirstName { get; set; } = string.Empty;
     
     [Required]
-    [StringLength(100)]
+    [StringLength(20)]
     public string LastName { get; set; } = string.Empty;
     
     [Required]
@@ -27,8 +27,6 @@ public class User
     public string? PhoneNumber { get; set; }
     
     public bool IsActive { get; set; } = true;
-    
-    public bool IsEmailVerified { get; set; } = false;
     
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     
