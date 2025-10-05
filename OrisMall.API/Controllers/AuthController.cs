@@ -22,6 +22,8 @@ public class AuthController : ControllerBase
 
     /// <summary>
     /// Register new user account
+    /// Time Complexity: O(1) for database insert + O(k) for password hashing where k is password length
+    /// Space Complexity: O(1) for single user creation
     /// </summary>
     /// <returns>Created user information</returns>
     [HttpPost("register")]
@@ -37,6 +39,8 @@ public class AuthController : ControllerBase
 
     /// <summary>
     /// Authenticate user and return JWT token
+    /// Time Complexity: O(1) for database lookup + O(k) for password verification where k is password length
+    /// Space Complexity: O(1) for JWT token generation
     /// </summary>
     /// <returns>JWT token and user information</returns>
     [HttpPost("login")]
@@ -52,6 +56,8 @@ public class AuthController : ControllerBase
 
     /// <summary>
     /// Logout current user
+    /// Time Complexity: O(1) for logging operation (JWT is stateless)
+    /// Space Complexity: O(1) for simple response
     /// </summary>
     /// <returns>Success message</returns>
     [HttpPost("logout")]
@@ -71,6 +77,8 @@ public class AuthController : ControllerBase
 
     /// <summary>
     /// Get current user profile
+    /// Time Complexity: O(1) for database lookup by primary key
+    /// Space Complexity: O(1) for single user data
     /// </summary>
     /// <returns>Current user information</returns>
     [HttpGet("profile/get-profile")]
@@ -88,6 +96,8 @@ public class AuthController : ControllerBase
 
     /// <summary>
     /// Update current user profile
+    /// Time Complexity: O(1) for database update by primary key
+    /// Space Complexity: O(1) for single user update
     /// </summary>
     /// <returns>Updated user information</returns>
     [HttpPut("profile/update-profile")]
@@ -101,6 +111,8 @@ public class AuthController : ControllerBase
 
     /// <summary>
     /// Change current user password
+    /// Time Complexity: O(1) for database update + O(k) for password hashing where k is password length
+    /// Space Complexity: O(1) for single password update
     /// </summary>
     /// <returns>Success message</returns>
     [HttpPost("change-password")]
@@ -114,6 +126,8 @@ public class AuthController : ControllerBase
 
     /// <summary>
     /// Create new admin user (admin only)
+    /// Time Complexity: O(1) for database insert + O(k) for password hashing where k is password length
+    /// Space Complexity: O(1) for single admin user creation
     /// </summary>
     /// <returns>Created admin user</returns>
     [HttpPost("admin")]
@@ -130,6 +144,8 @@ public class AuthController : ControllerBase
 
     /// <summary>
     /// Setup first admin account (bootstrap)
+    /// Time Complexity: O(n) for checking existing admins + O(1) for insert + O(k) for password hashing
+    /// Space Complexity: O(1) for single admin user creation
     /// </summary>
     /// <returns>Created first admin user</returns>
     [HttpPost("setup-super-admin")]

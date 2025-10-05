@@ -19,6 +19,8 @@ public class CartController : ControllerBase
 
     /// <summary>
     /// Get current cart contents
+    /// Time Complexity: O(1) for in-memory dictionary lookup by session ID
+    /// Space Complexity: O(n) where n is the number of items in cart
     /// </summary>
     /// <returns>Cart information with items</returns>
     [HttpGet]
@@ -35,6 +37,8 @@ public class CartController : ControllerBase
 
     /// <summary>
     /// Add product to cart
+    /// Time Complexity: O(1) for in-memory dictionary operations + O(1) for product lookup
+    /// Space Complexity: O(1) for single cart item addition
     /// </summary>
     /// <returns>Updated cart information</returns>
     [HttpPost("add")]
@@ -51,6 +55,8 @@ public class CartController : ControllerBase
 
     /// <summary>
     /// Update cart item quantity
+    /// Time Complexity: O(n) where n is the number of items in cart (to find the item)
+    /// Space Complexity: O(1) for single item update
     /// </summary>
     /// <returns>No content on success</returns>
     [HttpPut("update")]
@@ -67,6 +73,8 @@ public class CartController : ControllerBase
 
     /// <summary>
     /// Remove product from cart
+    /// Time Complexity: O(n) where n is the number of items in cart (to find the item)
+    /// Space Complexity: O(1) for single item removal
     /// </summary>
     /// <returns>No content on success</returns>
     [HttpDelete("remove/{productId}")]
@@ -83,6 +91,8 @@ public class CartController : ControllerBase
 
     /// <summary>
     /// Clear all items from cart
+    /// Time Complexity: O(1) for in-memory dictionary clear operation
+    /// Space Complexity: O(1) for cart reset
     /// </summary>
     /// <returns>No content on success</returns>
     [HttpDelete("clear")]
@@ -99,6 +109,8 @@ public class CartController : ControllerBase
 
     /// <summary>
     /// Get total number of items in cart
+    /// Time Complexity: O(1) for in-memory dictionary lookup + O(n) to count items where n is cart size
+    /// Space Complexity: O(1) for count result
     /// </summary>
     /// <returns>Cart item count</returns>
     [HttpGet("count")]

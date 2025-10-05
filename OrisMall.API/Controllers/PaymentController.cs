@@ -19,6 +19,8 @@ public class PaymentController : ControllerBase
 
     /// <summary>
     /// Process payment for an order
+    /// Time Complexity: O(1) for mock payment processing (simulated network delay)
+    /// Space Complexity: O(1) for payment response data
     /// </summary>
     /// <returns>Payment processing result</returns>
     [HttpPost("process")]
@@ -32,6 +34,8 @@ public class PaymentController : ControllerBase
 
     /// <summary>
     /// Get payment status by payment ID
+    /// Time Complexity: O(1) for in-memory dictionary lookup by payment ID
+    /// Space Complexity: O(1) for single payment status data
     /// </summary>
     /// <returns>Payment status information</returns>
     [HttpGet("status/{paymentId}")]
@@ -45,6 +49,8 @@ public class PaymentController : ControllerBase
 
     /// <summary>
     /// Process refund for a payment
+    /// Time Complexity: O(1) for mock refund processing (simulated network delay)
+    /// Space Complexity: O(1) for refund response data
     /// </summary>
     /// <returns>Refund processing result</returns>
     [HttpPost("refund")]

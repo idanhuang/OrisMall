@@ -20,6 +20,8 @@ public class ProductsController : ControllerBase
 
     /// <summary>
     /// Get all products
+    /// Time Complexity: O(n) where n is the number of products (with caching: O(1) on cache hit)
+    /// Space Complexity: O(n) for storing all product data
     /// </summary>
     /// <returns>List of all products</returns>
     [HttpGet]
@@ -35,6 +37,8 @@ public class ProductsController : ControllerBase
 
     /// <summary>
     /// Get product by ID
+    /// Time Complexity: O(1) for database lookup by primary key (with caching: O(1) on cache hit)
+    /// Space Complexity: O(1) for single product data
     /// </summary>
     /// <returns>Product information</returns>
     [HttpGet("{id}")]
@@ -55,6 +59,8 @@ public class ProductsController : ControllerBase
 
     /// <summary>
     /// Get products by category ID
+    /// Time Complexity: O(n) where n is the number of products in the category (with caching: O(1) on cache hit)
+    /// Space Complexity: O(n) for storing category products data
     /// </summary>
     /// <returns>List of products in the specified category</returns>
     [HttpGet("category/{categoryId}")]
@@ -70,6 +76,8 @@ public class ProductsController : ControllerBase
 
     /// <summary>
     /// Filter products with various criteria
+    /// Time Complexity: O(n) where n is the number of products (with database indexing: O(log n) for sorted queries)
+    /// Space Complexity: O(pageSize) for paginated results
     /// </summary>
     /// <returns>Filtered products with pagination</returns>
     [HttpGet("filter")]
@@ -101,6 +109,8 @@ public class ProductsController : ControllerBase
 
     /// <summary>
     /// Search products by name or description
+    /// Time Complexity: O(n) where n is the number of products (with full-text search indexing: O(log n))
+    /// Space Complexity: O(m) where m is the number of matching products
     /// </summary>
     /// <returns>List of matching products</returns>
     [HttpGet("search")]
@@ -122,6 +132,8 @@ public class ProductsController : ControllerBase
 
     /// <summary>
     /// Create new product (admin only)
+    /// Time Complexity: O(1) for database insert operation
+    /// Space Complexity: O(1) for single product creation
     /// </summary>
     /// <returns>Created product information</returns>
     [HttpPost]
@@ -138,6 +150,8 @@ public class ProductsController : ControllerBase
 
     /// <summary>
     /// Update existing product (admin only)
+    /// Time Complexity: O(1) for database update by primary key
+    /// Space Complexity: O(1) for single product update
     /// </summary>
     /// <returns>No content on success</returns>
     [HttpPut("{id}")]
@@ -154,6 +168,8 @@ public class ProductsController : ControllerBase
 
     /// <summary>
     /// Delete product (admin only)
+    /// Time Complexity: O(1) for database delete by primary key
+    /// Space Complexity: O(1) for single product deletion
     /// </summary>
     /// <returns>No content on success</returns>
     [HttpDelete("{id}")]

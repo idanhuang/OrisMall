@@ -20,6 +20,8 @@ public class CategoriesController : ControllerBase
 
     /// <summary>
     /// Create new category (admin only)
+    /// Time Complexity: O(1) for database insert operation
+    /// Space Complexity: O(1) for single category creation
     /// </summary>
     /// <returns>Created category information</returns>
     [HttpPost]
@@ -36,6 +38,8 @@ public class CategoriesController : ControllerBase
 
     /// <summary>
     /// Update existing category (admin only)
+    /// Time Complexity: O(1) for database update by primary key
+    /// Space Complexity: O(1) for single category update
     /// </summary>
     /// <returns>No content on success</returns>
     [HttpPut("{id}")]
@@ -52,6 +56,8 @@ public class CategoriesController : ControllerBase
 
     /// <summary>
     /// Delete category (admin only)
+    /// Time Complexity: O(1) for database delete by primary key
+    /// Space Complexity: O(1) for single category deletion
     /// </summary>
     /// <returns>No content on success</returns>
     [HttpDelete("{id}")]
@@ -64,6 +70,8 @@ public class CategoriesController : ControllerBase
 
     /// <summary>
     /// Get all categories
+    /// Time Complexity: O(n) where n is the number of categories (with caching: O(1) on cache hit)
+    /// Space Complexity: O(n) for storing all category data
     /// </summary>
     /// <returns>List of all categories</returns>
     [HttpGet]
@@ -79,6 +87,8 @@ public class CategoriesController : ControllerBase
 
     /// <summary>
     /// Get category by ID
+    /// Time Complexity: O(1) for database lookup by primary key
+    /// Space Complexity: O(1) for single category data
     /// </summary>
     /// <returns>Category information</returns>
     [HttpGet("{id}")]
@@ -100,6 +110,8 @@ public class CategoriesController : ControllerBase
 
     /// <summary>
     /// Search categories by name
+    /// Time Complexity: O(n) where n is the number of categories (with indexing: O(log n))
+    /// Space Complexity: O(m) where m is the number of matching categories
     /// </summary>
     /// <returns>List of matching categories</returns>
     [HttpGet("search")]
