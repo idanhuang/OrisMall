@@ -209,8 +209,15 @@ using (var scope = app.Services.CreateScope())
     
     if (app.Environment.IsDevelopment())
     {
-        // Development: Delete and recreate (safe for test data)
-        context.Database.EnsureDeleted();
+        // Development: Delete and recreate to ensure fresh seed data
+        try
+        {
+            context.Database.EnsureDeleted();
+        }
+        catch
+        {
+            // Database might not exist yet, that's okay
+        }
         context.Database.EnsureCreated();
     }
     else
