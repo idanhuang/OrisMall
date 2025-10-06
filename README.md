@@ -59,7 +59,8 @@ sqllocaldb start mssqllocaldb
 $env:ASPNETCORE_ENVIRONMENT="Development" (for PowerShell)
 set ASPNETCORE_ENVIRONMENT=Development (for Command Prompt)
 
-# Run the application
+# Navigate to publish directory and run the application
+cd publish
 OrisMall.API.exe
 
 # Access Swagger UI: http://localhost:5000/swagger

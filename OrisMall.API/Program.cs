@@ -177,7 +177,10 @@ if (app.Environment.IsDevelopment())
 }
 
 // Security & routing
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 app.UseCors("AllowAll");
 
 // Custom middleware
