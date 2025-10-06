@@ -120,13 +120,48 @@ OrisMall.API.exe
 # Access Swagger UI: http://localhost:5000/swagger
 ```
 
+#### Option 5: Docker (Recommended for Production)
+```bash
+# Navigate to project directory
+cd <your-local-repo-name>
+
+# Build and run with Docker Compose
+docker-compose up --build
+
+# Access: http://localhost:8080/swagger
+# SQL Server: localhost:1433 (sa/Test123!)
+
+# Stop containers
+docker-compose down
+```
+
+## 🐳 Docker
+
+**Prerequisites:** Docker Desktop, ports 8080 & 1433 available
+
+**Quick Commands:**
+```bash
+# View logs
+docker-compose logs
+
+# Restart API
+docker-compose restart orismall-api
+
+# Clean restart
+docker-compose down && docker-compose up --build
+```
+
+**Note:** First startup takes 2-3 minutes (SQL Server initialization)
+
 ## 🛠️ Technology Stack
 
 - **.NET 8** - ASP.NET Core Web API
-- **Entity Framework Core** - ORM with SQL Server LocalDB
+- **Entity Framework Core** - ORM with SQL Server LocalDB/Docker
+- **Docker & Docker Compose** - Containerization
 - **JWT** - Authentication
 - **Serilog** - Logging
 - **xUnit + Moq** - Testing
 
 ## 📋 Important Notes
-- **Database**: LocalDB (data lost on restart)
+- **Database**: LocalDB (data lost on restart) or Docker SQL Server (persistent)
+- **Security**: Change JWT key and SQL password (`Test123!`) for production
