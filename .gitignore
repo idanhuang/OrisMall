@@ -52,7 +52,3 @@ Thumbs.db
 # =========================
 # Published output (if publishing to folder)
 # =========================
-publish/
-
-README.md
-/.dockerignore
