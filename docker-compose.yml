@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  # SQL Server Database
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: orismall-sqlserver
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=Test123!
+      - MSSQL_PID=Express
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    networks:
+      - orismall-network
+    restart: unless-stopped
+
+  # OrisMall API
+  orismall-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: orismall-api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+      - ConnectionStrings__DefaultConnection=Server=sqlserver,1433;User Id=sa;Password=Test123!;MultipleActiveResultSets=true;TrustServerCertificate=true
+      - Jwt__Key=YourSuperSecretKeyThatIsAtLeast32CharactersLong!
+      - Jwt__Issuer=OrisMall
+      - Jwt__Audience=OrisMall
+    ports:
+      - "8080:80"
+      - "8443:443"
+    depends_on:
+      - sqlserver
+    networks:
+      - orismall-network
+    restart: unless-stopped
+
+volumes:
+  sqlserver_data:
+
+networks:
+  orismall-network:
+    driver: bridge

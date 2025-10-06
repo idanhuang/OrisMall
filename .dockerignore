@@ -1,0 +1,32 @@
+# Ignore build outputs
+**/bin/
+**/obj/
+**/out/
+
+# Ignore test projects
+**/OrisMall.Tests/
+
+# Ignore development files
+**/.vs/
+**/.vscode/
+**/.idea/
+
+# Ignore git
+.git/
+.gitignore
+
+# Ignore documentation
+README.md
+*.md
+
+# Ignore deployment files
+**/publish/
+**/Dockerfile*
+**/.dockerignore
+
+# Ignore logs
+**/*.log
+
+# Ignore temporary files
+**/tmp/
+**/temp/
